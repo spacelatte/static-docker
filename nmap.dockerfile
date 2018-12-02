@@ -2,9 +2,9 @@
 
 FROM debian:stable
 
-#ENV CC=clang
-ENV DIR=nmap
-ENV REPO=https://svn.nmap.org/nmap
+ENV CC   clang
+ENV DIR  nmap
+ENV REPO https://svn.nmap.org/nmap
 
 WORKDIR /data
 
