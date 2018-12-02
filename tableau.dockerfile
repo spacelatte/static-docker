@@ -27,8 +27,8 @@ RUN echo 'echo; echo mem: 32768' > /usr/local/bin/free && \
 
 RUN dpkg -i tableau-tabcmd.deb tableau-server.deb || true
 
-RUN /opt/tableau/tabcmd/bin/tabcmd --accepteula
-RUN /opt/tableau/tableau_server/packages/scripts.20183.18.1019.1426/initialize-tsm --accepteula
+#RUN /opt/tableau/tabcmd/bin/tabcmd --accepteula
+#RUN /opt/tableau/tableau_server/packages/scripts.20183.18.1019.1426/initialize-tsm --accepteula
 
 RUN ln -s /opt/tableau/tabcmd/bin/tabcmd /usr/local/bin/tabcmd
 
