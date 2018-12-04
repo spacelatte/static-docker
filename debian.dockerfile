@@ -5,6 +5,7 @@ FROM debian:stable
 WORKDIR /data
 
 RUN apt update && apt install -y \
+	man \
 	git \
 	vim \
 	tmux \
