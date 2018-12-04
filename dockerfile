@@ -2,22 +2,6 @@
 
 FROM debian:stable as debian
 
-ENV CC      clang
-ENV DIR     heirloom
-ENV REPO    a.cvs.sourceforge.net::cvsroot/heirloom/
-ENV CVSROOT /data/cvs
-
-WORKDIR /data
-
-RUN apt update && apt install -y \
-	build-essential rsync clang cvs \
-	&& apt clean
-
-RUN rsync -aiz --progress $REPO $DIR
-RUN find $DIR -iname "#*" -delete
-RUN mkdir -p $CVSROOT && cd $CVSROOT && \
-	cvs checkout -P heirloom{,-sh,-pkgtools,-devtools,-doctools}
-
 ############################################################
 
 FROM busybox as box
