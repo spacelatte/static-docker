@@ -13,4 +13,5 @@ RUN apt update && apt install -y automake build-essential clang libevent-dev git
 
 RUN git clone -q --progress --depth 1 $REPO $DIR
 RUN (cd $DIR; bash autogen.sh) && $DIR/configure --enable-static
+
 CMD make -C . -j $(nproc) && ./tmux
