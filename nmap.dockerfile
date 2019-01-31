@@ -10,12 +10,12 @@ WORKDIR /data
 
 RUN apt update && apt install -y autoconf automake \
 	build-essential clang make subversion ca-certificates python-dev \
-	libpcap-dev libpcre2-dev libpcre3-dev liblinear-dev libssl-dev liblua5.3-dev \
+	libpcap-dev libpcre2-dev libpcre3-dev liblinear-dev liblua5.3-dev \
+	libz-dev libssh2-1-dev libssl-dev \
 	&& apt clean
 
 RUN svn co $REPO $DIR
-
-RUN (cd $DIR && ./configure && make -j $(nproc))
+RUN (cd $DIR && ./configure --without-zenmap && make -j $(nproc))
 
 #ENV PATH="$PATH:$DIR"
 #ENTRYPOINT [ "nmap" ]
