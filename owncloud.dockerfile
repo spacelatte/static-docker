@@ -4,8 +4,8 @@ FROM debian:stable
 
 WORKDIR /data
 
-COPY owncloud-10.0.10.tar.bz2 owncloud.tar.bz2
-#ADD https://download.owncloud.org/community/owncloud-10.0.10.tar.bz2 owncloud.tar.bz2
+#COPY owncloud-10.0.10.tar.bz2 owncloud.tar.bz2
+ADD https://download.owncloud.org/community/owncloud-10.0.10.tar.bz2 owncloud.tar.bz2
 
 RUN apt update && apt install -y        \
 	bzip2 apache2 libapache2-mod-php    \

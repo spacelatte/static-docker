@@ -1,4 +1,4 @@
-#!/usr/bin/env docker build -t pvtmert/heirloom -f
+#!/usr/bin/env docker build --compress -t pvtmert/heirloom -f
 
 FROM debian:stable
 

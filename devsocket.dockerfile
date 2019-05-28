@@ -1,4 +1,4 @@
-#!/usr/bin/env docker build -t pvtmert/devsocket -f
+#!/usr/bin/env docker build --compress -t pvtmert/devsocket -f
 
 FROM pvtmert/websocketd
 
