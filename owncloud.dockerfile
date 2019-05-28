@@ -21,8 +21,23 @@ RUN apt update && apt install -y        \
 	&& rm -f /etc/apache2/sites-enabled/* \
 	&& echo service nginx configtest
 
-COPY apache.conf /etc/apache2/sites-enabled/main.conf
+#COPY apache.conf /etc/apache2/sites-enabled/main.conf
 #COPY nginx.conf /etc/nginx/sites-enabled/main.conf
+
+RUN ( \
+	echo "<VirtualHost *:80>";                                 \
+	echo "	#LogLevel info ssl:warn";                          \
+	echo "	#ServerName www.example.com";                      \
+	echo "	ServerAdmin webmaster@localhost";                  \
+	echo "	DocumentRoot /srv/www";                            \
+	echo "	#ErrorLog ${APACHE_LOG_DIR}/error.log";            \
+	echo "	#CustomLog ${APACHE_LOG_DIR}/access.log combined"; \
+	echo "	#Include conf-available/serve-cgi-bin.conf";       \
+	echo "	<Directory /srv/www >";                            \
+	echo "		Require all granted";                          \
+	echo "	</Directory>";                                     \
+	echo "</VirtualHost>";                                     \
+) | tee /etc/apache2/sites-enabled/main.conf
 
 CMD true \
 	&& echo service php7.0-fpm start \
