@@ -28,7 +28,7 @@ RUN unzip -od ${ANDROID_HOME} android-sdk.zip
 ADD https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-linux-x64.tar.xz node.tar.xz
 RUN tar xvf node.tar.xz                                 && \
 	cp -R node-${NODE_VERSION}-linux-x64/*/ /usr/local/ && \
-	rm -rf node-${NODE_VERSION}-linux-x64               && \
+	rm -rf node-${NODE_VERSION}-linux-x64 node.tar.xz   && \
 	npm i -g npm yarn react-native-cli
 
 RUN yes | /usr/lib/android-sdk/tools/bin/sdkmanager --update

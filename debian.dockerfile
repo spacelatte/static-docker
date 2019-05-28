@@ -22,6 +22,7 @@ RUN apt update && apt install -y \
 	sshfs \
 	cmake \
 	clang \
+	nodejs \
 	bcrypt \
 	ccrypt \
 	airspy \
@@ -52,6 +53,8 @@ RUN apt update && apt install -y \
 	mailutils \
 	moreutils \
 	findutils \
+	cloud-init \
+	vnc4server \
 	pkg-config \
 	cifs-utils \
 	subversion \
@@ -73,9 +76,8 @@ RUN apt update && apt install -y \
 	openjdk-8-jdk-headless \
 	&& apt clean
 
-
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen
 
-ENV USER=root
+ENV USER root
 CMD login -f $USER || su - $USER
 
