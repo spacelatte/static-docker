@@ -3,7 +3,7 @@
 FROM debian
 
 RUN apt update
-RUN apt install -y unzip procps xz-utils openjdk-8-jdk
+RUN apt install -y unzip procps xz-utils default-jdk-headless
 
 #VOLUME /data
 WORKDIR /data
