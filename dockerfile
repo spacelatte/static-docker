@@ -1,6 +1,6 @@
-#!/usr/bin/env docker build --compress -t pvtmert/scratch -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/scratch -f
 
-FROM debian:stable as debian
+FROM debian as deb
 
 ############################################################
 

@@ -1,6 +1,13 @@
-#!/usr/bin/env docker build --compress -t pvtmert/tableau -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/tableau -f
 
-FROM debian:stable
+FROM debian
+
+RUN apt update
+RUN apt install -y \
+	procps openjdk-8-jre \
+	fontconfig fuse net-tools bash-completion gdb freeglut3 \
+	libegl1-mesa libfreetype6 libfuse2 libgssapi-krb5-2 \
+	libxcomposite1 libxrender1 libxslt1.1 lsb-core
 
 WORKDIR /data
 
@@ -9,13 +16,6 @@ ENV pkg_server https://downloads.tableau.com/tssoftware/tableau-server-2018-3-0_
 
 ADD $pkg_tabcmd ./tableau-tabcmd.deb
 ADD $pkg_server ./tableau-server.deb
-
-RUN apt update && apt install -y \
-	procps openjdk-8-jre \
-	fontconfig fuse net-tools bash-completion gdb freeglut3 \
-	libegl1-mesa libfreetype6 libfuse2 libgssapi-krb5-2 \
-	libxcomposite1 libxrender1 libxslt1.1 lsb-core \
-	&& apt clean
 
 # hack
 RUN mkdir -p /run/systemd/system

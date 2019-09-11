@@ -1,6 +1,9 @@
-#!/usr/bin/env docker build --compress -t pvtmert/react-native -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/react-native -f
 
-FROM debian:stable
+FROM debian
+
+RUN apt update
+RUN apt install -y unzip procps xz-utils openjdk-8-jdk
 
 #VOLUME /data
 WORKDIR /data
@@ -12,8 +15,6 @@ ENV FD_GEOM 720x800
 ENV DEVICE "Nexus 5X"
 ENV IMAGE "system-images;android-25;google_apis;armeabi-v7a"
 ENV NAME "defaultdevice"
-
-RUN apt update && apt install -y unzip procps xz-utils openjdk-8-jdk && apt clean
 
 #RUN apt update && apt install -y \
 #	unzip procps tightvncserver matchbox-window-manager fluxbox dwm \

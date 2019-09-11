@@ -1,10 +1,9 @@
-#!/usr/bin/env docker build --compress -t pvtmert/debian -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/debian -f
 
 FROM debian:stable
 
-WORKDIR /data
-
-RUN apt update && apt install -y \
+RUN apt update
+RUN apt install -y \
 	man \
 	git \
 	vim \
@@ -73,11 +72,10 @@ RUN apt update && apt install -y \
 	suckless-tools \
 	bash-completion \
 	build-essential \
-	openjdk-8-jdk-headless \
-	&& apt clean
+	openjdk-8-jdk-headless
 
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen
 
+WORKDIR /data
 ENV USER root
 CMD login -f $USER || su - $USER
-

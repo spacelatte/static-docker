@@ -1,4 +1,4 @@
-#!/usr/bin/env docker build --compress -t pvtmert/websocketd -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/websocketd -f
 
 FROM alpine:latest
 
