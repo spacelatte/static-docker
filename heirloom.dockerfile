@@ -1,6 +1,10 @@
-#!/usr/bin/env docker build --compress -t pvtmert/heirloom -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/heirloom -f
 
-FROM debian:stable
+FROM debian
+
+RUN apt update
+RUN apt install -y \
+	libssl-dev build-essential rsync clang cvs
 
 #ENV CC      clang
 ENV DIR     heirloom
@@ -8,10 +12,6 @@ ENV REPO    a.cvs.sourceforge.net::cvsroot/heirloom/
 ENV CVSROOT /data/heirloom
 
 WORKDIR /data
-
-RUN apt update && apt install -y \
-	libssl-dev build-essential rsync clang cvs \
-	&& apt clean
 
 RUN rsync -aiz --progress $REPO $DIR
 RUN find $DIR -iname "#*" -delete

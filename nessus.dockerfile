@@ -1,11 +1,12 @@
-#!/usr/bin/env docker build --compress -t pvtmert/nessus -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/nessus -f
 
 FROM debian
 
-EXPOSE 8834
+EXPOSE  8834
 WORKDIR /data
 
-ADD https://www.tenable.com/downloads/pages/60/downloads/9339/download_file?utf8=%E2%9C%93&i_agree_to_tenable_license_agreement=true&commit=I+Agree nessus.deb
+ADD "https://www.tenable.com/downloads/pages/60/downloads/9339/download_file?utf8=%E2%9C%93&i_agree_to_tenable_license_agreement=true&commit=I+Agree" \
+	nessus.deb
 
 RUN dpkg -i nessus.deb
 

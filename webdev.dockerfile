@@ -1,18 +1,22 @@
-#!/usr/bin/env docker build --compress -t pvtmert/webdev -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/webdev -f
 
 FROM debian
 
-RUN echo mysql-server mysql-server/root_password password ""       | debconf-set-selections
-RUN echo mysql-server mysql-server/root_password_again password "" | debconf-set-selections
-
-RUN apt update && apt dist-upgrade -y && apt install -y nano net-tools \
-	nginx mysql-server mysql-client zlib1g-dev php-fpm php-mysql \
+RUN apt update
+RUN apt dist-upgrade -y
+RUN apt install -y nano net-tools \
+	nginx mysql-client zlib1g-dev php-fpm php-mysql \
 	php-curl php-zip php-mcrypt php-gd php-mbstring php-xml \
 	postgresql-all ssl-cert
+
+RUN echo mysql-server mysql-server/root_password       password "" | debconf-set-selections
+RUN echo mysql-server mysql-server/root_password_again password "" | debconf-set-selections
+RUN apt install -y mysql-server
 
 RUN echo "listen_addresses = '*'" | tee -a /etc/postgresql/9.6/main/postgresql.conf
 RUN echo "host  all  all  0.0.0.0/0  md5" | tee -a /etc/postgresql/9.6/main/pg_hba.conf
 RUN sed -i 's: md5: trust:g' /etc/postgresql/9.6/main/pg_hba.conf
+#RUN ln -s ../data/www /srv/www
 
 RUN ( \
 	echo 'server {'                                            ;\
@@ -43,11 +47,7 @@ RUN service mysql start; until test -e /var/run/mysqld/mysqld.sock; do \
 	"; service mysql stop
 
 WORKDIR /data
-
-EXPOSE 5432
-EXPOSE 3306
-EXPOSE 443
-EXPOSE 80
+EXPOSE 80 443 3306 5432
 
 CMD true; \
 	service postgresql start; \

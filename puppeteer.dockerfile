@@ -1,10 +1,6 @@
-#!/usr/bin/env docker build --compress -t pvtmert/puppeteer -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/puppeteer -f
 
 FROM centos:7
-
-ENV NODE_VER 10.15.3
-
-WORKDIR /data
 
 RUN yum update -y && yum install -y \
 	pango                    \
@@ -30,7 +26,11 @@ RUN yum update -y && yum install -y \
 	xorg-x11-fonts-misc      \
 	git curl xz
 
+ENV NODE_VER 10.15.3
+
 RUN curl -#L "https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-x64.tar.xz" \
 	| xz -vvdc | tar --strip-components=1 -xC /usr/local
 
 RUN npm install -g --unsafe-perm=true puppeteer
+
+WORKDIR /data

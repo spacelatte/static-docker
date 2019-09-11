@@ -1,16 +1,16 @@
-#!/usr/bin/env docker build --compress -t pvtmert/clustercontrol -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/clustercontrol -f
 
-FROM debian:stable
+FROM debian
+
+ARG DEBIAN_FRONTEND=noninteractive 
+RUN apt update
+RUN apt install -y \
+	lsb-release wget python dmidecode bc gnupg software-properties-common
 
 WORKDIR /data
-
-RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
-	lsb-release wget python dmidecode bc gnupg software-properties-common \
-	&& apt clean
-
 ADD https://severalnines.com/scripts/install-cc?tO8kqTiuINLDD3AnjLvIkPc_RawPCNwCavdHZYZglYY, install-cc
 
-RUN echo "mysql-server mysql-server/root_password password mypassword"       | debconf-set-selections
+RUN echo "mysql-server mysql-server/root_password       password mypassword" | debconf-set-selections
 RUN echo "mysql-server mysql-server/root_password_again password mypassword" | debconf-set-selections
 
 ENV S9S_ROOT_PASSWORD 1234

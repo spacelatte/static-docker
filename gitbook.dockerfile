@@ -1,13 +1,12 @@
-#!/usr/bin/env docker build --compress -t pvtmert/gitbook -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/gitbook -f
 
-FROM alpine:latest
-
-WORKDIR /data
-
-ENV GLIBC 2.29-r0
-ENV CALIBRE https://github.com/kovidgoyal/calibre/releases/download/v3.40.1/calibre-3.40.1-x86_64.txz
+FROM alpine
 
 RUN apk add nodejs npm curl xz mesa-gl
+
+WORKDIR /data
+ENV GLIBC 2.29-r0
+ENV CALIBRE https://github.com/kovidgoyal/calibre/releases/download/v3.40.1/calibre-3.40.1-x86_64.txz
 
 RUN (cd /tmp; \
 	curl -#L "${CALIBRE}" | xz -dc | tar -xC /usr/local; \
