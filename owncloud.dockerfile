@@ -8,7 +8,7 @@ RUN apt install -y \
 	php-xml php-intl php-curl php-gd \
 	php-pgsql php-sqlite3 php-mysql  \
 	php-mbstring php-fpm php-zip     \
-	postgresql mysql-server
+	postgresql default-mysql-server
 
 WORKDIR /data
 #COPY owncloud-10.0.10.tar.bz2 owncloud.tar.bz2
@@ -43,7 +43,7 @@ RUN ( \
 
 CMD true \
 	&& echo service php7.0-fpm start \
-	&& service apache2    start \
-	&& service mysql      start \
+	&& service apache2 start \
+	&& service mysql   start \
 	&& mysql -uroot -e "SET PASSWORD FOR 'root'@'%' = PASSWORD('pass')" \
 	&& tail -F /var/log/apache2/access.log

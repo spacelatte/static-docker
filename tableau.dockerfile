@@ -4,7 +4,7 @@ FROM debian
 
 RUN apt update
 RUN apt install -y \
-	procps openjdk-8-jre \
+	procps default-jre-headless \
 	fontconfig fuse net-tools bash-completion gdb freeglut3 \
 	libegl1-mesa libfreetype6 libfuse2 libgssapi-krb5-2 \
 	libxcomposite1 libxrender1 libxslt1.1 lsb-core
