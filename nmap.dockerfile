@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/nmap -f
 
-FROM debian:stable
+FROM debian
 
 RUN apt update
 RUN apt install -y autoconf automake \
