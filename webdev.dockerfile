@@ -5,7 +5,7 @@ FROM debian
 RUN apt update
 RUN apt dist-upgrade -y
 RUN apt install -y nano net-tools \
-	nginx mysql-client zlib1g-dev php-fpm php-mysql \
+	nginx default-mysql-client zlib1g-dev php-fpm php-mysql \
 	php-curl php-zip php-mcrypt php-gd php-mbstring php-xml \
 	postgresql-all ssl-cert
 

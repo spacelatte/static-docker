@@ -16,7 +16,8 @@ ENV PORT 8080
 WORKDIR /data
 EXPOSE ${PORT}
 
-COPY ./airflow-init.sh ./init.sh
+ADD https://gist.githubusercontent.com/pvtmert/9397d3ac65bbad6eb0d29bd1f9999b98/raw/airflow-init.sh \
+	./init.sh
 
 RUN ( \
 		echo "(cd /data; test -e init.sh && bash init.sh)" ; \
