@@ -72,7 +72,7 @@ RUN apt install -y \
 	suckless-tools \
 	bash-completion \
 	build-essential \
-	openjdk-8-jdk-headless
+	default-jdk-headless
 
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen
 
