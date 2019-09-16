@@ -15,11 +15,11 @@ RUN echo "mysql-server mysql-server/root_password_again password mypassword" | d
 
 ENV S9S_ROOT_PASSWORD 1234
 ENV S9S_CMON_PASSWORD 1234
-ENV INNODB_BUFFER_POOL_SIZE 512
+ENV INNODB_BUFFER_POOL_SIZE 128
 
-RUN apt install -y mysql-server && \
-	bash install-cc             && \
-	a2enmod proxy proxy_http proxy_wstunnel
+RUN apt install -y default-mysql-server
+RUN bash install-cc
+RUN a2enmod proxy proxy_http proxy_wstunnel
 
 CMD true && \
 	service mysql       start; \
