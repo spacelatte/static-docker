@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/nmap -f
 
-FROM debian
+FROM debian as build
 
 RUN apt update
 RUN apt install -y autoconf automake \
@@ -15,11 +15,21 @@ ENV DIR  nmap
 ENV REPO https://svn.nmap.org/nmap
 
 RUN svn co $REPO $DIR
-RUN (cd $DIR && ./configure --without-zenmap && make -j $(nproc))
+RUN (cd $DIR \
+		&& ./configure --without-zenmap \
+			LDFLAGS="-fPIC" \
+			CFLAGS=" -fPIC" \
+		&& make -j$(nproc) \
+		&& make -j$(nproc) install \
+	) || true
 
 #ENV PATH="$PATH:$DIR"
 #ENTRYPOINT [ "nmap" ]
 #CMD [ "--help" ]
 
-ENV PATH=$PATH:$DIR:$DIR/nping:$DIR/ncat
-CMD nmap
+FROM debian
+RUN apt update
+RUN apt install -y libpcap0.8 libssh2-1 libssl1.1 liblinear3 liblua5.3
+COPY --from=build /usr/local /usr/local
+ENTRYPOINT [ "nmap" ]
+CMD        [ ]
