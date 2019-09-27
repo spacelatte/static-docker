@@ -1,3 +1,26 @@
+#!/usr/bin/env -S docker build --compress -t pvtmert/nginx:centos-7 -f
+
+FROM centos:7 as build
+
+RUN yum update -y
+RUN yum install -y gcc make pcre-devel pcre2-devel zlib-devel openssl-devel
+
+ENV VER 1.17.4
+WORKDIR /data
+RUN curl -#sk "https://nginx.org/download/nginx-${VER}.tar.gz" \
+	| tar --strip-components=1 -oxvz
+
+RUN ./configure && make -j$(nproc) build install
+
+FROM centos:7
+
+WORKDIR /usr/local
+COPY --from=build /usr/local/nginx ./nginx
+
+#RUN ln -sf /dev/stderr /usr/local/nginx/logs/error.log
+RUN ln -sf /dev/stdout /usr/local/nginx/logs/access.log
+CMD ./nginx/sbin/nginx -g 'daemon off;'
+
 #!/usr/bin/env -S docker build --compress -t pvtmert/nginx -f
 
 FROM nginx:latest
