@@ -6,7 +6,7 @@ RUN apt update
 RUN apt dist-upgrade -y
 RUN apt install -y nano net-tools \
 	nginx default-mysql-client zlib1g-dev php-fpm php-mysql \
-	php-curl php-zip php-mcrypt php-gd php-mbstring php-xml \
+	php-curl php-zip php-gd php-mbstring php-xml \
 	postgresql-all ssl-cert
 
 RUN echo mysql-server mysql-server/root_password       password "" | debconf-set-selections
