@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/tableau -f
 
-FROM debian
+FROM debian:9
 
 RUN apt update
 RUN apt install -y \
