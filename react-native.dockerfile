@@ -1,9 +1,9 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/react-native -f
 
-FROM debian
+FROM debian:sid
 
 RUN apt update
-RUN apt install -y unzip procps xz-utils default-jdk-headless
+RUN apt install -y unzip procps xz-utils openjdk-8-jdk-headless
 
 #VOLUME /data
 WORKDIR /data
@@ -13,7 +13,7 @@ ENV NODE_VERSION v10.15.0
 ENV PASSWORD hellorn
 ENV FD_GEOM 720x800
 ENV DEVICE "Nexus 5X"
-ENV IMAGE "system-images;android-25;google_apis;armeabi-v7a"
+ENV IMAGE "system-images;android-29;google_apis;x86_64"
 ENV NAME "defaultdevice"
 
 #RUN apt update && apt install -y \
@@ -44,8 +44,8 @@ RUN yes | /usr/lib/android-sdk/tools/bin/sdkmanager --install \
 	'extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2'        \
 	'patcher;v4'                                                                        \
 	'platform-tools'                                                                    \
-	'build-tools;28.0.3'                                                                \
-	'platforms;android-28'                                                              \
+	'build-tools;29.0.2'                                                                \
+	'platforms;android-29'                                                              \
 	'tools'
 #	'emulator'
 #	"${IMAGE}"
