@@ -5,7 +5,7 @@ FROM debian
 EXPOSE  8834
 WORKDIR /data
 
-ADD "https://www.tenable.com/downloads/pages/60/downloads/9339/download_file?utf8=%E2%9C%93&i_agree_to_tenable_license_agreement=true&commit=I+Agree" \
+ADD "https://www.tenable.com/downloads/api/v1/public/pages/nessus/downloads/9999/download?i_agree_to_tenable_license_agreement=true" \
 	nessus.deb
 
 RUN dpkg -i nessus.deb
