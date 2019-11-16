@@ -11,33 +11,33 @@ RUN echo mysql-server mysql-server/root_password_again password "${MYSQL_PASS}" 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update
 RUN apt install -y \
-	curl nginx \
-	php-fdomdocument \
-	php-fpm php-mysql \
+	curl nginx php-fdomdocument \
+	php-fpm php-mysql php-curl \
 	default-mysql-server
 
-ARG VERSION=5.2.4
+ARG VERSION=5.3
 WORKDIR /data
 RUN curl -#L https://wordpress.org/wordpress-${VERSION}.tar.gz \
 	| tar --strip=1 -oxz
 
 ARG PHP_VER=7.0
 RUN rm /etc/nginx/sites-enabled/default && ( \
-		echo "#error_log /tmp/log debug;"                              ; \
-		echo "server {"                                               ; \
-		echo "  listen 80 default_server;"                            ; \
-		echo "  listen 443 ssl default_server;"                       ; \
-		echo "  index index.php index.html;"                          ; \
-		echo "  root /data;"                                          ; \
-		echo "  #location / {"                                         ; \
-		echo "    try_files \$uri \$uri/ /index.php\$is_args\$args;"  ; \
-		echo "  #}"                                                    ; \
-		echo "  location ~ \.php$ {"                                  ; \
-		echo "    include snippets/fastcgi-php.conf;"                 ; \
-		echo "    fastcgi_intercept_errors on;"                       ; \
-		echo "    fastcgi_pass unix:/run/php/php${PHP_VER}-fpm.sock;" ; \
-		echo "  }"                                                    ; \
-		echo "}"                                                      ; \
+		echo "#error_log /tmp/log debug;"                               ; \
+		echo "server {"                                                 ; \
+		echo "  listen  80     default_server;"                         ; \
+		echo "  listen 443 ssl default_server;"                         ; \
+		echo "  index index.php index.html;"                            ; \
+		echo "  autoindex on;"                                          ; \
+		echo "  root /data;"                                            ; \
+		echo "  location / {"                                           ; \
+		echo "    try_files \$uri \$uri/ = /index.php\$is_args\$args;"  ; \
+		echo "  }"                                                      ; \
+		echo "  location ~ \.php$ {"                                    ; \
+		echo "    include snippets/fastcgi-php.conf;"                   ; \
+		echo "    fastcgi_intercept_errors on;"                         ; \
+		echo "    fastcgi_pass unix:/run/php/php${PHP_VER}-fpm.sock;"   ; \
+		echo "  }"                                                      ; \
+		echo "}"                                                        ; \
 	) | tee /etc/nginx/sites-enabled/wordpress
 
 #RUN echo "cgi.fix_pathinfo=0" | tee -a "/etc/php/${PHP_VER}/fpm/php.ini"
@@ -46,9 +46,10 @@ RUN ( \
 		echo ""; \
 		echo "[mysqld]"; \
 		echo "#skip-grant-tables"; \
-		echo "#default_authentication_plugin=mysql_native_password"; \
+		echo "#default_authentication_plugin = mysql_native_password"; \
 	) | tee -a /etc/mysql/conf.d/mysqld.cnf
 
+RUN sed -i'' 's:127.0.0.1:0.0.0.0:g' $(grep -rl '127\.0\.0\.1' /etc/mysql)
 
 RUN ( \
 		echo "#!/usr/bin/env sh"                                      ; \
@@ -105,8 +106,8 @@ CMD for i in "mysql" "php${PHP_VER}-fpm" "nginx"; do \
 		FLUSH PRIVILEGES; SELECT SLEEP(1) from user; \
 	" mysql && test -e init.sh && init.sh || sleep 0 && tail -f \
 		/var/log/php${PHP_VER}-fpm.log \
-		/var/log/nginx/error.log \
 		/var/log/nginx/access.log \
+		/var/log/nginx/error.log \
 		/var/log/mysql/error.log \
 		/tmp/log
 
