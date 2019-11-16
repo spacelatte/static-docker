@@ -11,7 +11,7 @@ RUN apt install -y nano net-tools \
 
 RUN echo mysql-server mysql-server/root_password       password "" | debconf-set-selections
 RUN echo mysql-server mysql-server/root_password_again password "" | debconf-set-selections
-RUN apt install -y mysql-server
+RUN apt install -y default-mysql-server
 
 RUN echo "listen_addresses = '*'" | tee -a /etc/postgresql/9.6/main/postgresql.conf
 RUN echo "host  all  all  0.0.0.0/0  md5" | tee -a /etc/postgresql/9.6/main/pg_hba.conf
@@ -39,8 +39,8 @@ RUN ( \
 
 RUN sed -i 's: = 127.0.0.1: = 0.0.0.0:g' /etc/mysql/mariadb.conf.d/50-server.cnf
 RUN service mysql start; until test -e /var/run/mysqld/mysqld.sock; do \
-	sleep 1; done; sleep 1; mysql -uroot -e \
-	"DROP USER 'root'@'localhost';                               \
+	sleep 1; done; sleep 1; mysql -uroot -e "                    \
+	DROP USER 'root'@'localhost';                                \
 	CREATE USER 'root'@'%' IDENTIFIED BY '';                     \
 	GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION; \
 	FLUSH PRIVILEGES;                                            \
