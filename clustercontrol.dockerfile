@@ -5,7 +5,7 @@ FROM debian
 ARG DEBIAN_FRONTEND=noninteractive 
 RUN apt update
 RUN apt install -y \
-	lsb-release wget python dmidecode bc gnupg software-properties-common
+	lsb-release wget python dmidecode bc gnupg software-properties-common procps
 
 WORKDIR /data
 ADD https://severalnines.com/scripts/install-cc?tO8kqTiuINLDD3AnjLvIkPc_RawPCNwCavdHZYZglYY, install-cc
