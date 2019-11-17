@@ -4,7 +4,12 @@
 
 FROM debian:9
 
+ARG MYSQL_USER=root
 ARG MYSQL_PASS=password
+ARG MYSQL_HOST=localhost
+ARG MYSQL_PORT=3306
+ARG MYSQL_NAME=wordpress
+
 RUN echo mysql-server mysql-server/root_password       password "${MYSQL_PASS}" | debconf-set-selections
 RUN echo mysql-server mysql-server/root_password_again password "${MYSQL_PASS}" | debconf-set-selections
 
@@ -30,15 +35,30 @@ RUN rm /etc/nginx/sites-enabled/default && ( \
 		echo "  autoindex on;"                                          ; \
 		echo "  root /data;"                                            ; \
 		echo "  location / {"                                           ; \
-		echo "    try_files \$uri \$uri/ = /index.php\$is_args\$args;"  ; \
+		echo "    try_files"                                            ; \
+		echo "      \$uri"                                              ; \
+		echo "      \$uri/"                                             ; \
+		echo "      \$uri.html"                                         ; \
+		echo "      @extensionless-php"                                 ; \
+		echo "      #\$uri.php\$is_args\$args"                          ; \
+		echo "      = /index.php\$is_args\$args"                        ; \
+		echo "      #=404"                                              ; \
+		echo "      ;"                                                  ; \
 		echo "  }"                                                      ; \
 		echo "  location ~ \.php$ {"                                    ; \
+		echo "    #try_files \$uri = /index.php\$is_args\$args;"        ; \
+		echo "    #include fastcgi_params;"                             ; \
 		echo "    include snippets/fastcgi-php.conf;"                   ; \
 		echo "    fastcgi_intercept_errors on;"                         ; \
 		echo "    fastcgi_pass unix:/run/php/php${PHP_VER}-fpm.sock;"   ; \
 		echo "  }"                                                      ; \
+		echo "  location @extensionless-php {"                          ; \
+		echo "    rewrite ^(.+)$ \$1.php last;"                         ; \
+		echo "  }"                                                      ; \
 		echo "}"                                                        ; \
 	) | tee /etc/nginx/sites-enabled/wordpress
+
+RUN nginx -t
 
 #RUN echo "cgi.fix_pathinfo=0" | tee -a "/etc/php/${PHP_VER}/fpm/php.ini"
 
@@ -61,8 +81,8 @@ RUN ( \
 		echo "<?php"                                                    ; \
 		echo "\$table_prefix = 'wp_';"                                  ; \
 		echo "define( 'WP_DEBUG',    true );"                           ; \
-		echo "define( 'DB_NAME',     'wordpress' );"                    ; \
-		echo "define( 'DB_USER',     'root' );"                         ; \
+		echo "define( 'DB_NAME',     '${MYSQL_NAME}' );"                ; \
+		echo "define( 'DB_USER',     '${MYSQL_USER}' );"                ; \
 		echo "define( 'DB_PASSWORD', '${MYSQL_PASS}' );"                ; \
 		echo "define( 'DB_HOST',     ':/var/run/mysqld/mysqld.sock' );" ; \
 		echo "define( 'DB_CHARSET',  'utf8' );"                         ; \
@@ -82,20 +102,25 @@ RUN ( \
 		echo "?>"                                                       ; \
 	) | tee wp-config.php
 
+RUN echo "<?php phpinfo(); ?>" | tee info.php
+
 RUN chown -R www-data:users .
 
 #VOLUME /var/lib/mysql
 ENV PHP_VER "${PHP_VER}"
 ENV DB_USER "${MYSQL_USER:-root}"
 ENV DB_PASS "${MYSQL_PASS:-1234}"
+ENV DB_PORT "${MYSQL_PORT:-3306}"
+ENV DB_HOST "${MYSQL_HOST:-localhost}"
+ENV DB_NAME "${MYSQL_NAME:-wordpress}"
 #RUN chown -R mysql:mysql /var/lib/mysql /var/run/mysqld
 CMD for i in "mysql" "php${PHP_VER}-fpm" "nginx"; do \
 		echo Staring: $i; \
 		service $i start; \
 	done; echo "Password: '${DB_PASS}' "; \
-	mysql -BEno -u"root" -p"${DB_PASS}" -e "\
+	mysql -BEno -h"${DB_HOST}" -P"${DB_PORT}" -u"root" -p"${DB_PASS}" -e "\
 		SELECT PASSWORD('${DB_PASS}') as '${DB_PASS}'; \
-		CREATE SCHEMA wordpress; \
+		CREATE SCHEMA ${DB_NAME}; \
 		UPDATE user SET \
 			Host='%', \
 			User='${DB_USER}', \
