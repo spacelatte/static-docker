@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/webdev -f
 
-FROM debian
+FROM debian:stable
 
 RUN apt update
 RUN apt dist-upgrade -y
@@ -13,9 +13,9 @@ RUN echo mysql-server mysql-server/root_password       password "" | debconf-set
 RUN echo mysql-server mysql-server/root_password_again password "" | debconf-set-selections
 RUN apt install -y default-mysql-server
 
-RUN echo "listen_addresses = '*'" | tee -a /etc/postgresql/9.6/main/postgresql.conf
-RUN echo "host  all  all  0.0.0.0/0  md5" | tee -a /etc/postgresql/9.6/main/pg_hba.conf
-RUN sed -i 's: md5: trust:g' /etc/postgresql/9.6/main/pg_hba.conf
+RUN echo "listen_addresses = '*'"         | tee -a /etc/postgresql/*/main/postgresql.conf
+RUN echo "host  all  all  0.0.0.0/0  md5" | tee -a /etc/postgresql/*/main/pg_hba.conf
+RUN sed -i 's: md5: trust:g'                       /etc/postgresql/*/main/pg_hba.conf
 #RUN ln -s ../data/www /srv/www
 
 RUN ( \
@@ -32,7 +32,7 @@ RUN ( \
 	echo '  }'                                                 ;\
 	echo '  location ~ \.php$ {'                               ;\
 	echo '    include snippets/fastcgi-php.conf;'              ;\
-	echo '    fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;' ;\
+	echo '    fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;' ;\
 	echo '  }'                                                 ;\
 	echo '}'                                                   ;\
 ) | tee /etc/nginx/sites-enabled/default
@@ -51,11 +51,11 @@ EXPOSE 80 443 3306 5432
 
 CMD true; \
 	service postgresql start; \
-	service php7.0-fpm start; \
+	service php7.3-fpm start; \
 	service mysql start; \
 	service nginx start; \
 	tail -f \
-		/var/log/php7.0-fpm.log   \
+		/var/log/php7.3-fpm.log   \
 		/var/log/mysql/error.log  \
 		/var/log/nginx/error.log  \
 		/var/log/nginx/access.log \

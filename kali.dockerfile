@@ -29,12 +29,15 @@ RUN apt install -y kali-tools-crypto-stego          && apt autoclean && apt clea
 RUN apt install -y kali-tools-bluetooth             && apt autoclean && apt clean
 RUN apt install -y kali-tools-802-11                && apt autoclean && apt clean
 RUN apt install -y kali-root-login                  && apt autoclean && apt clean
-RUN apt install -y kali-linux-nethunter             && apt autoclean && apt clean
-RUN apt install -y kali-linux-large                 && apt autoclean && apt clean
-RUN apt install -y kali-linux-everything            && apt autoclean && apt clean
-RUN apt install -y kali-linux-default               && apt autoclean && apt clean
-RUN apt install -y kali-linux-core                  && apt autoclean && apt clean
-RUN apt install -y kali-linux-all                   && apt autoclean && apt clean
-RUN apt install -y kali-defaults                    && apt autoclean && apt clean
+#RUN apt install -y kali-linux-nethunter             && apt autoclean && apt clean
+#RUN apt install -y kali-linux-large                 && apt autoclean && apt clean
+#RUN apt install -y kali-linux-everything            && apt autoclean && apt clean
+#RUN apt install -y kali-linux-default               && apt autoclean && apt clean
+#RUN apt install -y kali-linux-core                  && apt autoclean && apt clean
+#RUN apt install -y kali-linux-all                   && apt autoclean && apt clean
+#RUN apt install -y kali-defaults                    && apt autoclean && apt clean
+
+RUN apt install -y \
+	kali-linux-core kali-defaults
 
 CMD su -
