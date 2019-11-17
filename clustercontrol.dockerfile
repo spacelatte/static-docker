@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/clustercontrol -f
 
-FROM debian
+FROM debian:9
 
 ARG DEBIAN_FRONTEND=noninteractive 
 RUN apt update
@@ -17,7 +17,7 @@ ENV S9S_ROOT_PASSWORD 1234
 ENV S9S_CMON_PASSWORD 1234
 ENV INNODB_BUFFER_POOL_SIZE 128
 
-RUN apt install -y default-mysql-server
+RUN apt install -y mysql-server
 RUN bash install-cc
 RUN a2enmod proxy proxy_http proxy_wstunnel
 
