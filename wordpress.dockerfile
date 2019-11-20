@@ -108,7 +108,7 @@ RUN ( \
 RUN echo "<?php phpinfo(); ?>" | tee info.php
 
 RUN chown -R www-data:users .
-RUN truncate /var/log/mysql/error.log
+RUN truncate -s0 /var/log/mysql/error.log
 
 #VOLUME /var/lib/mysql
 ENV PHP_VER "${PHP_VER}"
