@@ -1,3 +1,6 @@
+#!/usr/bin/env -S docker build --compress -t pvtmert/nginx -f
+
+
 #!/usr/bin/env -S docker build --compress -t pvtmert/nginx:centos-7 -f
 
 FROM centos:7 as build
