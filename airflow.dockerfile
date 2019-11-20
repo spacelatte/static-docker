@@ -12,24 +12,55 @@ RUN pip3 install -U flask apache-airflow \
 		apache-airflow[mysql] apache-airflow[postgresql] \
 		JayDeBeApi pyexasol[pandas] psycopg2-binary
 
-ENV PORT 8080
-WORKDIR /data
-EXPOSE ${PORT}
+ENV USER          airflow
+ENV DBNAME        ${USER}
+ENV AIRFLOW_HOME  /data
+ENV AIRFLOW_DBURL "postgresql://localhost:5432/${DBNAME}?user=${USERNAME}"
 
-ADD https://gist.githubusercontent.com/pvtmert/9397d3ac65bbad6eb0d29bd1f9999b98/raw/airflow-init.sh \
-	./init.sh
+WORKDIR ${AIRFLOW_HOME}
+
+RUN systemctl enable postgresql
+RUN runuser -l postgres -c 'pg_ctl init -wD /var/lib/pgsql/data'
+RUN echo "listen_addresses = '*'"         | tee -a /var/lib/pgsql/data/postgresql.conf
+RUN echo "host  all  all  0.0.0.0/0  md5" | tee -a /var/lib/pgsql/data/pg_hba.conf
+RUN sed -i 's: ident:trust:g'                      /var/lib/pgsql/data/pg_hba.conf
+RUN sed -i 's: peer: trust:g'                      /var/lib/pgsql/data/pg_hba.conf
+RUN sed -i 's: md5:  trust:g'                      /var/lib/pgsql/data/pg_hba.conf
 
 RUN ( \
-		echo "(cd /data; test -e init.sh && bash init.sh)" ; \
+		echo "#cd '${AIRFLOW_HOME}';"                                         ; \
+		echo "test -e '${AIRFLOW_HOME}/.firstrun' || {"                       ; \
+		echo "  touch '${AIRFLOW_HOME}/.firstrun'"                            ; \
+		echo "  psql -U postgres -c '"                                        ; \
+		echo "    create user ${USERNAME};"                                   ; \
+		echo "    create database ${DBNAME};"                                 ; \
+		echo "    grant all privileges on database ${DBNAME} to ${USERNAME};" ; \
+		echo "  '"                                                            ; \
+		echo "  airflow initdb"                                               ; \
+		echo "}"                                                              ; \
+		echo "echo scheduler webserver | xargs -n1 -P9 -- airflow &" ; \
 	) | tee -a /etc/rc.local
 
-RUN systemctl enable rc-local; \
+
+ENV LANG "en_US.UTF-8"
+ENV LC_ALL "${LANG}"
+RUN airflow initdb && airflow resetdb -y \
+	&& sed -i'' 's/executor = .*/executor = LocalExecutor/'     \
+		"${AIRFLOW_HOME}/airflow.cfg" \
+	&& sed -i'' 's/load_examples = True/load_examples = False/' \
+		"${AIRFLOW_HOME}/airflow.cfg" \
+	&& sed -i'' 's/expose_config = False/expose_config = True/' \
+		"${AIRFLOW_HOME}/airflow.cfg" \
+	&& sed -i'' "s#sql_alchemy_conn = .*#sql_alchemy_conn = ${AIRFLOW_DBURL}#" \
+		"${AIRFLOW_HOME}/airflow.cfg" \
+	&& sed -i'' 's/dag_run_conf_overrides_params = False/dag_run_conf_overrides_params = True/' \
+		"${AIRFLOW_HOME}/airflow.cfg" \
+	&& true
+
+RUN chmod +x /etc/rc.local /etc/rc.d/rc.local; \
 	passwd -df root; \
 	passwd -uf root; \
-	chmod +x /etc/rc.local /etc/rc.d/rc.local
+	systemctl enable rc-local;
 
-
+EXPOSE 8080
 CMD init
-
-#epel-release gcc gcc-c++ wget curl
-#python36 python36-devel python36-pip postgresql postgresql-server
