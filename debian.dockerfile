@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/debian -f
 
-FROM debian
+FROM debian:stable
 
 RUN apt update
 RUN apt install -y \
@@ -72,10 +72,16 @@ RUN apt install -y \
 	suckless-tools \
 	bash-completion \
 	build-essential \
-	default-jdk-headless
+	default-jdk-headless \
+	&& apt clean \
+	&& apt autoclean \
+	&& apt autoremove \
+	&& echo done
 
-RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen
+RUN echo "en_US.UTF-8 UTF-8" \
+	| tee -a /etc/locale.gen \
+	&& locale-gen
 
-WORKDIR /data
+WORKDIR /tmp
 ENV USER root
 CMD login -f $USER || su - $USER
