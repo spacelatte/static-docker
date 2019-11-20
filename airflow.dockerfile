@@ -62,5 +62,5 @@ RUN chmod +x /etc/rc.local /etc/rc.d/rc.local; \
 	passwd -uf root; \
 	systemctl enable rc-local;
 
-EXPOSE 8080
+EXPOSE 5432 8080
 CMD init
