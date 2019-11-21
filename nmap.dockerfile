@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/nmap -f
 
-FROM debian as build
+FROM debian:9 AS build
 
 RUN apt update
 RUN apt install -y autoconf automake \
@@ -27,7 +27,7 @@ RUN (cd $DIR \
 #ENTRYPOINT [ "nmap" ]
 #CMD [ "--help" ]
 
-FROM debian
+FROM debian:9
 RUN apt update
 RUN apt install -y libpcap0.8 libssh2-1 libssl1.1 liblinear3 liblua5.3
 COPY --from=build /usr/local /usr/local
