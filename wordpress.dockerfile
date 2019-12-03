@@ -29,6 +29,7 @@ ARG PHP_VER=7.0
 #ARG HOSTNAME=localhost
 RUN rm /etc/nginx/sites-enabled/default && ( \
 		echo "server_tokens off;"                                       ; \
+		echo "client_max_body_size 100M;"                               ; \
 		echo "error_log /tmp/log info;"                                 ; \
 		echo "server {"                                                 ; \
 		echo "  listen  80     default_server;"                         ; \
@@ -48,12 +49,14 @@ RUN rm /etc/nginx/sites-enabled/default && ( \
 		echo "      ;"                                                  ; \
 		echo "  }"                                                      ; \
 		echo "  location ~ \.php$ {"                                    ; \
+		echo "    #proxy_set_header  Host localhost;"                   ; \
 		echo "    #proxy_set_header Host \$hostname;"                   ; \
 		echo "    #try_files \$uri = /index.php\$is_args\$args;"        ; \
 		echo "    #include fastcgi_params;"                             ; \
 		echo "    include snippets/fastcgi-php.conf;"                   ; \
 		echo "    fastcgi_intercept_errors on;"                         ; \
 		echo "    fastcgi_pass unix:/run/php/php${PHP_VER}-fpm.sock;"   ; \
+		echo "    #proxy_redirect http://localhost/ /;"                 ; \
 		echo "  }"                                                      ; \
 		echo "  location @extensionless-php {"                          ; \
 		echo "    rewrite ^(.+)$ \$1.php last;"                         ; \
@@ -63,7 +66,10 @@ RUN rm /etc/nginx/sites-enabled/default && ( \
 
 RUN nginx -t
 
-#RUN echo "cgi.fix_pathinfo=0" | tee -a "/etc/php/${PHP_VER}/fpm/php.ini"
+RUN echo "post_max_size=0"          | tee -a "/etc/php/${PHP_VER}/fpm/php.ini"
+RUN echo "max_file_uploads=100"     | tee -a "/etc/php/${PHP_VER}/fpm/php.ini"
+RUN echo "upload_max_filesize=100M" | tee -a "/etc/php/${PHP_VER}/fpm/php.ini"
+RUN echo "cgi.fix_pathinfo=0"       | tee -a "/etc/php/${PHP_VER}/fpm/php.ini"
 
 RUN ( \
 		echo ""; \
@@ -105,8 +111,8 @@ RUN ( \
 		echo "define('WP_DEBUG_DISPLAY',           false   );"         ; \
 		echo "define('DISABLE_WP_CRON',            false   );"         ; \
 		echo "define('AUTOMATIC_UPDATER_DISABLED', false   );"         ; \
-		echo "define('WP_HOME',       getenv('WP_HOME')    );"         ; \
-		echo "define('WP_SITEURL',    getenv('WP_SITEURL') );"         ; \
+		echo "//define('WP_HOME',       getenv('WP_HOME')    );"       ; \
+		echo "//define('WP_SITEURL',    getenv('WP_SITEURL') );"       ; \
 		echo "define('FORCE_SSL',             false );"                ; \
 		echo "define('FORCE_SSL_ADMIN',       false );"                ; \
 		echo "define('FORCE_SSL_LOGIN',       false );"                ; \
@@ -115,6 +121,7 @@ RUN ( \
 		echo "  define( 'ABSPATH', dirname( __FILE__ ) . '/' );"       ; \
 		echo "}"                                                       ; \
 		echo "require_once( ABSPATH . 'wp-settings.php' );"            ; \
+		echo "//error_log(print_r(get_defined_vars(), true));"         ; \
 		echo "?>"                                                      ; \
 	) | tee ./wp-config.php
 
@@ -122,6 +129,25 @@ RUN touch ./wp-content/debug.log
 RUN echo "<?php phpinfo(); ?>" | tee ./info.php
 RUN chown -R www-data:users .
 RUN truncate -s0 /var/log/mysql/error.log
+
+ARG CERT_FILE=/host
+ARG CERT_HOST=localhost
+ARG CERT_DAYS=3650
+ARG CERT_SIZE=4096
+RUN openssl req \
+	-new        \
+	-x509       \
+	-sha256     \
+	-nodes      \
+	-newkey "rsa:${CERT_SIZE:-2048}" \
+	-keyout "${CERT_FILE}.key"       \
+	-out    "${CERT_FILE}.crt"       \
+	-days   "${CERT_DAYS:-365}"      \
+	-subj   "/CN=${CERT_HOST:-*}"
+RUN ( \
+		echo "ssl_certificate     ${CERT_FILE}.crt;" ; \
+		echo "ssl_certificate_key ${CERT_FILE}.key;" ; \
+	) | tee -a /etc/nginx/sites-enabled/wordpress
 
 #VOLUME /var/lib/mysql
 ENV PHP_VER "${PHP_VER}"
@@ -134,8 +160,8 @@ ENV WP_HOME    ""
 ENV WP_SITEURL ""
 #RUN chown -R mysql:mysql /var/lib/mysql /var/run/mysqld
 CMD date; hostname; \
-	test -z "${WP_HOME}"    &&    WP_HOME="/" ; \
-	test -z "${WP_SITEURL}" && WP_SITEURL="/" ; \
+	test -z "${WP_HOME}"    &&    WP_HOME="http://localhost" ; \
+	test -z "${WP_SITEURL}" && WP_SITEURL="http://localhost" ; \
 	/bin/sh -c export \
 		| grep -e DB_ -e WP_ \
 		| tee -a "/etc/default/php-fpm${PHP_VER}" >/dev/null; \
@@ -158,7 +184,7 @@ CMD date; hostname; \
 	&& test -e init.sh \
 	&& init.sh \
 	|| sleep 0 \
-	&& tail -f \
+	&& tail -F \
 		/var/log/php${PHP_VER}-fpm.log \
 		/var/log/nginx/access.log \
 		/var/log/nginx/error.log \
@@ -172,3 +198,6 @@ HEALTHCHECK \
 	--interval=5m \
 	--start-period=1s \
 	CMD curl -skLfm1 localhost
+
+EXPOSE 80 443 3306
+VOLUME /var/lib/mysql /data/wp-content
