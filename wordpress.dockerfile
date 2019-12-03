@@ -17,7 +17,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update
 RUN apt install -y \
 	curl nginx php-fdomdocument \
-	php-fpm php-mysql php-curl \
+	php-fpm php-mysql php-curl php-gd \
 	ccze default-mysql-server
 
 ARG VERSION=5.3
@@ -26,9 +26,10 @@ RUN curl -#L https://wordpress.org/wordpress-${VERSION}.tar.gz \
 	| tar --strip=1 -oxz
 
 ARG PHP_VER=7.0
+#ARG HOSTNAME=localhost
 RUN rm /etc/nginx/sites-enabled/default && ( \
 		echo "server_tokens off;"                                       ; \
-		echo "#error_log /tmp/log debug;"                               ; \
+		echo "error_log /tmp/log info;"                                 ; \
 		echo "server {"                                                 ; \
 		echo "  listen  80     default_server;"                         ; \
 		echo "  listen 443 ssl default_server;"                         ; \
@@ -47,6 +48,7 @@ RUN rm /etc/nginx/sites-enabled/default && ( \
 		echo "      ;"                                                  ; \
 		echo "  }"                                                      ; \
 		echo "  location ~ \.php$ {"                                    ; \
+		echo "    #proxy_set_header Host \$hostname;"                   ; \
 		echo "    #try_files \$uri = /index.php\$is_args\$args;"        ; \
 		echo "    #include fastcgi_params;"                             ; \
 		echo "    include snippets/fastcgi-php.conf;"                   ; \
@@ -75,21 +77,21 @@ RUN sed -i'' "s:;clear_env = no:clear_env = no:g" \
 	"/etc/php/${PHP_VER}/fpm/pool.d/www.conf"
 
 RUN ( \
-		echo "#!/usr/bin/env sh"                                      ; \
-		echo "cat /dev/urandom | tr -dc [:alnum:] | head -c \${1:16}" ; \
-		echo "echo"                                                   ; \
-	) | tee random.sh
+		echo "#!/usr/bin/env sh"                                       ; \
+		echo "cat /dev/urandom | tr -dc [:alnum:] | head -c \${1:-16}" ; \
+		echo "echo"                                                    ; \
+	) | tee ./random.sh
 
 RUN ( \
 		echo "<?php"                                                   ; \
 		echo "\$table_prefix = 'wp_';"                                 ; \
-		echo "define('WP_DEBUG',    true );"                           ; \
-		echo "define('DB_NAME',     '${MYSQL_NAME}' );"                ; \
-		echo "define('DB_USER',     '${MYSQL_USER}' );"                ; \
-		echo "define('DB_PASSWORD', '${MYSQL_PASS}' );"                ; \
-		echo "define('DB_HOST',     ':/var/run/mysqld/mysqld.sock' );" ; \
+		echo "define('RELOCATE',     true  );"                         ; \
 		echo "define('DB_CHARSET',  'utf8' );"                         ; \
-		echo "define('DB_COLLATE',  '' );"                             ; \
+		echo "define('DB_COLLATE',  'utf8_general_ci' );"              ; \
+		echo "define('DB_NAME',     getenv('DB_NAME') );"              ; \
+		echo "define('DB_USER',     getenv('DB_USER') );"              ; \
+		echo "define('DB_PASSWORD', getenv('DB_PASS') );"              ; \
+		echo "define('DB_HOST',     getenv('DB_HOST') );"              ; \
 		echo "define('AUTH_KEY',         '$(bash random.sh 24)' );"    ; \
 		echo "define('SECURE_AUTH_KEY',  '$(bash random.sh 24)' );"    ; \
 		echo "define('LOGGED_IN_KEY',    '$(bash random.sh 24)' );"    ; \
@@ -98,15 +100,26 @@ RUN ( \
 		echo "define('SECURE_AUTH_SALT', '$(bash random.sh 24)' );"    ; \
 		echo "define('LOGGED_IN_SALT',   '$(bash random.sh 24)' );"    ; \
 		echo "define('NONCE_SALT',       '$(bash random.sh 24)' );"    ; \
+		echo "define('WP_DEBUG',                   true    );"         ; \
+		echo "define('WP_DEBUG_LOG',               true    );"         ; \
+		echo "define('WP_DEBUG_DISPLAY',           false   );"         ; \
+		echo "define('DISABLE_WP_CRON',            false   );"         ; \
+		echo "define('AUTOMATIC_UPDATER_DISABLED', false   );"         ; \
+		echo "define('WP_HOME',       getenv('WP_HOME')    );"         ; \
+		echo "define('WP_SITEURL',    getenv('WP_SITEURL') );"         ; \
+		echo "define('FORCE_SSL',             false );"                ; \
+		echo "define('FORCE_SSL_ADMIN',       false );"                ; \
+		echo "define('FORCE_SSL_LOGIN',       false );"                ; \
+		echo "define('WP_AUTO_UPDATE_CORE', 'minor' );"                ; \
 		echo "if ( ! defined( 'ABSPATH' ) ) {"                         ; \
 		echo "  define( 'ABSPATH', dirname( __FILE__ ) . '/' );"       ; \
 		echo "}"                                                       ; \
 		echo "require_once( ABSPATH . 'wp-settings.php' );"            ; \
 		echo "?>"                                                      ; \
-	) | tee wp-config.php
+	) | tee ./wp-config.php
 
-RUN echo "<?php phpinfo(); ?>" | tee info.php
-
+RUN touch ./wp-content/debug.log
+RUN echo "<?php phpinfo(); ?>" | tee ./info.php
 RUN chown -R www-data:users .
 RUN truncate -s0 /var/log/mysql/error.log
 
@@ -117,12 +130,19 @@ ENV DB_PASS "${MYSQL_PASS:-1234}"
 ENV DB_PORT "${MYSQL_PORT:-3306}"
 ENV DB_HOST "${MYSQL_HOST:-localhost}"
 ENV DB_NAME "${MYSQL_NAME:-wordpress}"
+ENV WP_HOME    ""
+ENV WP_SITEURL ""
 #RUN chown -R mysql:mysql /var/lib/mysql /var/run/mysqld
-CMD for i in "mysql" "php${PHP_VER}-fpm" "nginx"; do \
-		echo Staring: $i; \
-		service $i start; \
+CMD date; hostname; \
+	test -z "${WP_HOME}"    &&    WP_HOME="/" ; \
+	test -z "${WP_SITEURL}" && WP_SITEURL="/" ; \
+	/bin/sh -c export \
+		| grep -e DB_ -e WP_ \
+		| tee -a "/etc/default/php-fpm${PHP_VER}" >/dev/null; \
+	for i in "mysql" "php${PHP_VER}-fpm" "nginx"; do \
+		echo "Staring: ${i}"; \
+		service "${i}" start; \
 	done; \
-	echo "Password: '${DB_PASS}' "                                      ; \
 	mysql -BEno -h"${DB_HOST}" -P"${DB_PORT}" -u"root" -p"${DB_PASS}" -e "\
 		SELECT PASSWORD('${DB_PASS}') as '${DB_PASS}';                    \
 		CREATE SCHEMA ${DB_NAME};                                         \
@@ -143,6 +163,7 @@ CMD for i in "mysql" "php${PHP_VER}-fpm" "nginx"; do \
 		/var/log/nginx/access.log \
 		/var/log/nginx/error.log \
 		/var/log/mysql/error.log \
+		./wp-content/debug.log \
 		/tmp/log \
 		| ccze -A
 
