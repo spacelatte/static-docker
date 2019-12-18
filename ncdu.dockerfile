@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/ncdu -f
 
-FROM debian
+FROM debian:9 # well, fix kernel too old error :)
 
 RUN apt update
 RUN apt install -y \
@@ -15,7 +15,7 @@ WORKDIR /data
 
 RUN git clone -q --progress --depth=1 $REPO $DIR
 
-RUN (cd $DIR; autoreconf -i) && $DIR/configure
+RUN (cd $DIR; autoreconf -i) && $DIR/configure LDFLAGS=-static
 
 CMD make -C . -j $(nproc)
 
