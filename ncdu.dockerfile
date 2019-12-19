@@ -1,6 +1,7 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/ncdu -f
 
-FROM debian:9 # well, fix kernel too old error :)
+# well, fix kernel too old error :)
+FROM debian:9
 
 RUN apt update
 RUN apt install -y \
