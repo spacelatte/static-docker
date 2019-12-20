@@ -4,7 +4,8 @@ FROM debian:10
 
 RUN apt update
 RUN apt install -y \
-	xvfb arduino curl
+	xvfb arduino curl python \
+	python-pip python-serial
 
 WORKDIR /data
 
@@ -42,30 +43,18 @@ RUN printf 'boardsmanager.additional.urls=%s\n' "$(cat /urls.txt | tr \\n ,)" \
 	| tee "/prefs.txt"
 #	| tee -a "~/.arduino15/preferences.txt" "/prefs.txt"
 
-ENV DISPLAY   ":0"
-ENV BOARD     "esp32:esp32:esp32thing"
-ENV BOARDS    "arduino:avr esp32:esp32"
+ENV BOARDS    "arduino:avr"
 ENV LIBRARIES "SD TFT GSM Servo Keyboard Esplora Firmata LiquidCrystal Ethernet ArduinoBLE"
-CMD ( \
-		Xvfb "$DISPLAY" & \
-		arduino --verbose --pref "boardsmanager.additional.urls=$(cat /urls.txt | tr \\n ,)" --save-prefs; \
-		arduino --verbose --pref "build.path=/tmp" --save-prefs ; \
-		arduino --verbose --install-library "$LIBRARIES" ; \
-		arduino --verbose --install-boards  "$BOARDS"    ; \
-		arduino --verbose \
-			--preserve-temp-files \
-			--board "$BOARD" \
-			--verify $(find . -iname "*.ino") \
-	)
 
 RUN ( \
-		arduino-cli -v core install   $BOARDS    ; \
-		arduino-cli -v lib  install   $LIBRARIES ; \
+		arduino-cli -v core install $BOARDS    ; \
+		arduino-cli -v lib  install $LIBRARIES ; \
 	)
 
+ENV BOARD     "arduino:avr:uno"
 CMD ( \
-		arduino-cli -v core install   $BOARDS    ; \
-		arduino-cli -v lib  install   $LIBRARIES ; \
+		arduino-cli -v core install $BOARDS    ; \
+		arduino-cli -v lib  install $LIBRARIES ; \
 		find . -iname libs.txt -exec cat {} + \
 			| grep -viE '^http' \
 			| tr \\n \\0 \
@@ -76,5 +65,5 @@ CMD ( \
 			| xargs -0 -n1 -I% -- bash -c 'curl -#Lk "%" | tar -xzC ~/Arduino/libraries'; \
 		arduino-cli -v compile --fqbn $BOARD \
 			--warnings default \
-			$(dirname $(find . -iname "*.ino"))  ; \
+			$(dirname $(find . -iname "*.ino")) ; \
 	)
