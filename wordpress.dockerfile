@@ -20,7 +20,7 @@ RUN apt install -y \
 	php-fpm php-mysql php-curl php-gd \
 	ccze default-mysql-server
 
-ARG VERSION=5.3
+ARG VERSION=5.3.2
 WORKDIR /data
 RUN curl -#L https://wordpress.org/wordpress-${VERSION}.tar.gz \
 	| tar --strip=1 -oxz
