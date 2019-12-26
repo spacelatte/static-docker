@@ -32,16 +32,12 @@ RUN echo "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/pac
 	| tee -a /urls.txt
 
 RUN arduino-cli -v config init
-RUN sed -i.old 's#board_manager: {}#board_manager:\n  additional_urls:#g' \
+RUN sed -i'' 's#board_manager: {}#board_manager:\n  additional_urls:#g' \
 	~/.arduino15/arduino-cli.yaml
 RUN sed 's:^:  - :g' /urls.txt \
 	| tee -a ~/.arduino15/arduino-cli.yaml
 RUN arduino-cli -v core update-index
 RUN arduino-cli -v lib  update-index
-
-RUN printf 'boardsmanager.additional.urls=%s\n' "$(cat /urls.txt | tr \\n ,)" \
-	| tee "/prefs.txt"
-#	| tee -a "~/.arduino15/preferences.txt" "/prefs.txt"
 
 ENV BOARDS    "arduino:avr"
 ENV LIBRARIES "SD TFT GSM Servo Keyboard Esplora Firmata LiquidCrystal Ethernet ArduinoBLE"
@@ -51,10 +47,14 @@ RUN ( \
 		arduino-cli -v lib  install $LIBRARIES ; \
 	)
 
-ENV BOARD     "arduino:avr:uno"
+RUN echo 'void setup() { }; void loop() { };' | tee -a /tmp/tmp.ino
+
+ENV BOARD  "arduino:avr:uno"
+ENV PARAMS "_dummy=yes"
 CMD ( \
-		arduino-cli -v core install $BOARDS    ; \
-		arduino-cli -v lib  install $LIBRARIES ; \
+		arduino-cli -v core  install ${BOARDS}    ; \
+		arduino-cli -v lib   install ${LIBRARIES} ; \
+		arduino-cli -v board details ${BOARD}     ; \
 		find . -iname libs.txt -exec cat {} + \
 			| grep -viE '^http' \
 			| tr \\n \\0 \
@@ -62,8 +62,12 @@ CMD ( \
 		find . -iname libs.txt -exec cat {} + \
 			| grep -iE '^http' \
 			| tr \\n \\0 \
-			| xargs -0 -n1 -I% -- bash -c 'curl -#Lk "%" | tar -xzC ~/Arduino/libraries'; \
-		arduino-cli -v compile --fqbn $BOARD \
+			| xargs -0 -n1 -I% -- \
+				bash -c 'curl -#Lk "%" | tar -xzC ~/Arduino/libraries' ; \
+		arduino-cli -v compile -b "${BOARD}" --show-properties /tmp    ; \
+		arduino-cli -v compile \
+			--build-properties "${PARAMS}" \
 			--warnings default \
+			--fqbn $BOARD \
 			$(dirname $(find . -iname "*.ino")) ; \
 	)
