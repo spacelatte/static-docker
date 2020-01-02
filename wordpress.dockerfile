@@ -91,7 +91,7 @@ RUN ( \
 RUN ( \
 		echo "<?php"                                                   ; \
 		echo "\$table_prefix = 'wp_';"                                 ; \
-		echo "define('RELOCATE',     true  );"                         ; \
+		echo "//define('RELOCATE',     true  );"                       ; \
 		echo "define('DB_CHARSET',  'utf8' );"                         ; \
 		echo "define('DB_COLLATE',  'utf8_general_ci' );"              ; \
 		echo "define('DB_NAME',     getenv('DB_NAME') );"              ; \
