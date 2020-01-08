@@ -74,7 +74,9 @@ RUN echo "cgi.fix_pathinfo=0"       | tee -a "/etc/php/${PHP_VER}/fpm/php.ini"
 RUN ( \
 		echo ""; \
 		echo "[mysqld]"; \
-		echo "#skip-grant-tables"; \
+		echo "disable_log_bin"; \
+		echo "skip-grant-tables"; \
+		echo "innodb_buffer_pool_size = 32M"; \
 		echo "#default_authentication_plugin = mysql_native_password"; \
 	) | tee -a /etc/mysql/conf.d/mysqld.cnf
 

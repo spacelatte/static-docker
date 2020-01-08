@@ -45,17 +45,17 @@ RUN mkdir -p /etc/nginx/streams-enabled \
 		echo "}"                                       ; \
 	) | tee -a /etc/nginx/nginx.conf \
 	&& ( \
-		echo "' $remote_addr'             " ; \
-		echo "' [$time_local]'            " ; \
-		echo "' $protocol'                " ; \
-		echo "' $status'                  " ; \
-		echo "' $bytes_sent'              " ; \
-		echo "' $bytes_received'          " ; \
-		echo "' $session_time'            " ; \
-		echo "' $upstream_addr'           " ; \
-		echo "' $upstream_bytes_sent'     " ; \
-		echo "' $upstream_bytes_received' " ; \
-		echo "' $upstream_connect_time'   " ; \
+		echo "' \$remote_addr'             " ; \
+		echo "' [\$time_local]'            " ; \
+		echo "' \$protocol'                " ; \
+		echo "' \$status'                  " ; \
+		echo "' \$bytes_sent'              " ; \
+		echo "' \$bytes_received'          " ; \
+		echo "' \$session_time'            " ; \
+		echo "' \$upstream_addr'           " ; \
+		echo "' \$upstream_bytes_sent'     " ; \
+		echo "' \$upstream_bytes_received' " ; \
+		echo "' \$upstream_connect_time'   " ; \
 	) | ( \
 		echo "log_format stream $(cat);"                     ; \
 		echo "access_log /var/log/nginx/stream.log stream;"  ; \
