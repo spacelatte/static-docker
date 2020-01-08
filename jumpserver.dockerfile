@@ -35,6 +35,7 @@ RUN rm /etc/nginx/sites-enabled/default && ( \
 		echo "server {"                           ; \
 		echo "  listen unix:/run/nginx.sock;"     ; \
 		echo "  root /var/www/html;"              ; \
+		echo "  index index.html;"                ; \
 		echo "}"                                  ; \
 	) | tee -a /etc/nginx/sites-enabled/default
 
@@ -76,6 +77,9 @@ RUN mkdir -p /etc/nginx/streams-enabled \
 		echo "}"                                             ; \
 	) | tee -a /etc/nginx/streams-enabled/default
 
+RUN mv /var/www/html/index.nginx-debian.html /var/www/html/index.html
+
+EXPOSE 443
 RUN nginx -t
 RUN ln -sf /dev/stdout /var/log/nginx/stream.log
 CMD nginx -g 'daemon off;'
