@@ -62,5 +62,12 @@ RUN chmod +x /etc/rc.local /etc/rc.d/rc.local; \
 	passwd -uf root; \
 	systemctl enable rc-local;
 
-EXPOSE 5432 8080
+ENV PORT 8080
+EXPOSE 5432 ${PORT}
 CMD init
+
+HEALTHCHECK \
+	--timeout=10s \
+	--interval=5m \
+	--start-period=1s \
+	CMD curl -skLfm1 localhost:${PORT}

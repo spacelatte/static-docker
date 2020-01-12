@@ -7,4 +7,4 @@ RUN apk add inotify-tools
 #VOLUME /data
 WORKDIR /data
 
-CMD [ "--port=80", "--staticdir=/data", "--", "inotifywait", "-re", "modify", "." ]
+CMD [ "--port=80", "--staticdir=.", "--", "inotifywait", "-re", "modify", "." ]

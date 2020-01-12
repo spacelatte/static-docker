@@ -2,7 +2,7 @@
 
 FROM alpine:latest
 
-ENV VERSION 0.3.0
+ENV VERSION 0.3.1
 
 ADD https://github.com/joewalnes/websocketd/releases/download/v$VERSION/websocketd-$VERSION-linux_amd64.zip \
 	websocketd.zip
