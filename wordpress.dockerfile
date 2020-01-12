@@ -141,11 +141,11 @@ RUN openssl req \
 	-x509       \
 	-sha256     \
 	-nodes      \
-	-newkey "rsa:${CERT_SIZE:-2048}" \
-	-keyout "${CERT_FILE}.key"       \
-	-out    "${CERT_FILE}.crt"       \
-	-days   "${CERT_DAYS:-365}"      \
-	-subj   "/CN=${CERT_HOST:-*}"
+	-newkey "rsa:${CERT_SIZE}" \
+	-keyout "${CERT_FILE}.key" \
+	-out    "${CERT_FILE}.crt" \
+	-days   "${CERT_DAYS}"     \
+	-subj   "/CN=${CERT_HOST}"
 RUN ( \
 		echo "ssl_certificate     ${CERT_FILE}.crt;" ; \
 		echo "ssl_certificate_key ${CERT_FILE}.key;" ; \
@@ -201,5 +201,11 @@ HEALTHCHECK \
 	--start-period=1s \
 	CMD curl -skLfm1 localhost
 
-EXPOSE 80 443 3306
-VOLUME /var/lib/mysql /data/wp-content
+EXPOSE \
+	80 \
+	443 \
+	3306
+
+VOLUME \
+	/var/lib/mysql \
+	/data/wp-content

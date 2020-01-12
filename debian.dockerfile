@@ -12,6 +12,7 @@ RUN apt install -y \
 	nano \
 	less \
 	nmap \
+	nasm \
 	cron \
 	tree \
 	htop \
