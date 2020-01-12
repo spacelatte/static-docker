@@ -36,7 +36,12 @@ RUN ( \
 
 CMD true \
 	&& service asterisk start \
-	&& tail -f \
-		/var/log/asterisk/messages \
-		/var/log/asterisk/queue_log \
-		/var/log/asterisk/cdr-csv/Master.csv
+	&& until pidof asterisk; do printf .; done \
+	&& echo \
+	&& sleep 1 \
+	&& tail -fn99 \
+	/var/log/asterisk/messages \
+	/var/log/asterisk/queue_log \
+	/var/log/asterisk/cdr-csv/Master.csv
+
+EXPOSE 5060/tcp 5060/udp
