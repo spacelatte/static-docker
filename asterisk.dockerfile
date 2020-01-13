@@ -6,6 +6,8 @@ RUN apt update
 RUN apt install -y \
 	asterisk
 
+WORKDIR /etc/asterisk
+
 RUN ( \
 	echo "[common](!)"          ; \
 	echo "type=friend"          ; \
@@ -23,7 +25,7 @@ RUN ( \
 	echo "context=internal"     ; \
 	echo "host=localhost"       ; \
 	echo "dtmfmode=rfc2833"     ; \
-	) | tee -a /etc/asterisk/sip.conf
+	) | tee -a ./sip.conf
 
 RUN ( \
 	echo "[internal]"                                            ; \
@@ -32,7 +34,7 @@ RUN ( \
 	echo "exten => _05XXXXXXXXX,1,Dial(SIP/\${EXTEN:1:11},90)"   ; \
 	echo "exten => _905XXXXXXXXX,1,Dial(SIP/\${EXTEN:2:12},90)"  ; \
 	echo "exten => _.905XXXXXXXXX,1,Dial(SIP/\${EXTEN:3:13},90)" ; \
-	) | tee -a /etc/asterisk/extensions.conf
+	) | tee -a ./extensions.conf
 
 CMD true \
 	&& service asterisk start \
