@@ -198,8 +198,8 @@ CMD date; hostname; \
 HEALTHCHECK \
 	--timeout=10s \
 	--interval=5m \
-	--start-period=1s \
-	CMD curl -skLfm1 localhost
+	--start-period=10s \
+	CMD curl -skILfm1 0:80
 
 EXPOSE \
 	80 \
