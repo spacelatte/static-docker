@@ -1,4 +1,4 @@
-#!/usr/bin/env -S docker build --compress -t xsv -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/xsv -f
 
 FROM alpine as build
 
