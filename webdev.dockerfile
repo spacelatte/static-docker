@@ -20,8 +20,8 @@ RUN sed -i 's: md5: trust:g'                       /etc/postgresql/*/main/pg_hba
 
 RUN ( \
 	echo 'server {'                                            ;\
-	echo '  listen 80 default_server;'                         ;\
-	echo '  listen 443 ssl default_server;'                    ;\
+	echo '  listen 80       default_server;'                   ;\
+	echo '  listen 443  ssl default_server;'                   ;\
 	echo '  include snippets/snakeoil.conf;'                   ;\
 	echo '  server_name _;'                                    ;\
 	echo '  root /data;'                                       ;\
