@@ -199,7 +199,7 @@ HEALTHCHECK \
 	--timeout=10s \
 	--interval=5m \
 	--start-period=10s \
-	CMD curl -skILfm1 0:80
+	CMD curl -skILfm1 http://0:80
 
 EXPOSE \
 	80 \
