@@ -2,42 +2,49 @@
 
 ARG VERSION=1.17.8
 ARG PREFIX=/nginx
+ARG BASE=debian:stable
+# you may use 'centos:7' or 'debian:stable' atm
+
+FROM ${BASE} as build
+ARG BASE
 
 #FROM centos:7 as build
-#RUN yum install -y \
-#	gcc \
-#	gcc-c++ \
-#	make \
-#	perl \
-#	libatomic \
-#	pcre-devel \
-#	pcre2-devel \
-#	openssl-devel \
-#	libxml2-devel \
-#	libxslt-devel \
-#	gd-devel \
-#	zlib-devel \
-#	geoip-devel \
-#	gperftools-devel
+RUN echo "${BASE}" | grep -qi centos \
+	&& yum install -y \
+		gcc \
+		gcc-c++ \
+		make \
+		perl \
+		libatomic \
+		pcre-devel \
+		openssl-devel \
+		libxml2-devel \
+		libxslt-devel \
+		gd-devel \
+		zlib-devel \
+		geoip-devel \
+		gperftools-devel \
+		libatomic_ops-devel \
+	|| true
 
-FROM debian:stable as build
-RUN apt update
-RUN apt install -y \
-	build-essential \
-	libgoogle-perftools-dev \
-	libatomic-ops-dev \
-	libpcre-ocaml-dev \
-	libpcre++-dev \
-	libpcre3-dev \
-	libpcre2-dev \
-	libgeoip-dev \
-	libxslt1-dev \
-	libxml2-dev \
-	libssl-dev \
-	zlib1g-dev \
-	libatomic1 \
-	libgd-dev \
-	curl perl
+#FROM debian:stable as build
+RUN echo "${BASE}" | grep -qi debian \
+	&& apt update \
+	&& apt install -y \
+		build-essential \
+		libgoogle-perftools-dev \
+		libatomic-ops-dev \
+		libpcre++-dev \
+		libpcre2-dev \
+		libgeoip-dev \
+		libxslt1-dev \
+		libxml2-dev \
+		libssl-dev \
+		zlib1g-dev \
+		libatomic1 \
+		libgd-dev \
+		curl perl \
+	|| true
 
 ARG VERSION
 WORKDIR /data
@@ -106,12 +113,25 @@ RUN make \
 	-j$(nproc) \
 	build install
 
-FROM debian:stable
-RUN apt update
-RUN apt install -y \
-	libgoogle-perftools4 \
-	libssl1.1 \
-	openssl
+FROM ${BASE}
+ARG BASE
+
+#FROM centos:7
+RUN echo "${BASE}" | grep -qi centos \
+	&& yum install -y \
+		gperftools-libs \
+		openssl \
+		pcre \
+	|| true
+
+#FROM debian:stable
+RUN echo "${BASE}" | grep -qi debian \
+	&& apt update \
+	&& apt install -y \
+		libgoogle-perftools4 \
+		libssl1.1 \
+		openssl \
+	|| true
 
 ARG PREFIX
 WORKDIR "${PREFIX}"
