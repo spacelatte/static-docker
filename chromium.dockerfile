@@ -7,16 +7,19 @@ RUN apt install -y chromium
 
 # default-jdk-headless openjdk-11-jdk-headless
 
+ENV DISPLAY :0
 EXPOSE 9222
 
 ENTRYPOINT [                              \
 	"chromium",                           \
 	"--no-sandbox",                       \
-	"--headless",                         \
 	"--remote-debugging-address=0.0.0.0", \
 	"--remote-debugging-port=9222"        \
 ]
-CMD [ "http://google.com" ]
+CMD [                   \
+	"--headless",       \
+	"http://google.com" \
+]
 
 #CMD chromium \
 #	--no-sandbox \
