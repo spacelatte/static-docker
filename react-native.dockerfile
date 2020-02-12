@@ -3,18 +3,20 @@
 FROM debian:sid
 
 RUN apt update
-RUN apt install -y unzip procps xz-utils openjdk-8-jdk-headless
+RUN apt install -y \
+	curl unzip procps openjdk-8-jdk-headless
 
 #VOLUME /data
 WORKDIR /data
 
 ENV ANDROID_HOME /usr/lib/android-sdk
-ENV NODE_VERSION v10.15.0
+ENV NODE_VERSION v12.16.0
 ENV PASSWORD hellorn
 ENV FD_GEOM 720x800
 ENV DEVICE "Nexus 5X"
 ENV IMAGE "system-images;android-29;google_apis;x86_64"
 ENV NAME "defaultdevice"
+ENV TARGET host.docker.internal
 
 #RUN apt update && apt install -y \
 #	unzip procps tightvncserver matchbox-window-manager fluxbox dwm \
@@ -23,14 +25,12 @@ ENV NAME "defaultdevice"
 #	android-sdk-platform-23 android-tools-fastboot android-tools-adb \
 #	&& apt clean
 
-ADD https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip android-sdk.zip
-RUN unzip -od ${ANDROID_HOME} android-sdk.zip
+ADD "https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip" android-sdk.zip
+RUN unzip -od "${ANDROID_HOME}" android-sdk.zip
 
-ADD https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-linux-x64.tar.xz node.tar.xz
-RUN tar xvf node.tar.xz                                 && \
-	cp -R node-${NODE_VERSION}-linux-x64/*/ /usr/local/ && \
-	rm -rf node-${NODE_VERSION}-linux-x64 node.tar.xz   && \
-	npm i -g npm yarn react-native-cli
+ADD "https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-linux-x64.tar.gz" node.tar.gz
+RUN tar --strip=1 -C "/usr/local" -xzvf node.tar.gz
+RUN npm i -g npm yarn react-native-cli
 
 RUN yes | /usr/lib/android-sdk/tools/bin/sdkmanager --update
 RUN yes | /usr/lib/android-sdk/tools/bin/sdkmanager --install \
@@ -50,13 +50,13 @@ RUN yes | /usr/lib/android-sdk/tools/bin/sdkmanager --install \
 #	'emulator'
 #	"${IMAGE}"
 
-RUN (                                 \
-	echo "#!/bin/bash";               \
-	echo "xhost +";                   \
-	echo "xset -dpms s off";          \
-	echo "fluxbox &";                 \
-	echo "bash /root/emu.sh &";       \
-	echo "xterm || wait";             \
+RUN ( \
+	echo "#!/bin/bash"         ; \
+	echo "xhost +"             ; \
+	echo "xset -dpms s off"    ; \
+	echo "fluxbox &"           ; \
+	echo "bash /root/emu.sh &" ; \
+	echo "xterm || wait"       ; \
 	) | tee /root/.xsession && chmod +x /root/.xsession
 
 #RUN echo | /usr/lib/android-sdk/tools/bin/avdmanager create avd \
@@ -71,6 +71,6 @@ RUN (                                 \
 #	-SecurityTypes VncAuth --I-KNOW-THIS-IS-INSECURE :0
 
 EXPOSE 5037 5554 5555
-CMD /usr/lib/android-sdk/platform-tools/adb start-server                 && \
-	/usr/lib/android-sdk/platform-tools/adb connect host.docker.internal && \
+CMD /usr/lib/android-sdk/platform-tools/adb start-server        && \
+	/usr/lib/android-sdk/platform-tools/adb connect "${TARGET}" && \
 	PATH="${PATH}:/usr/lib/android-sdk/platform-tools" bash
