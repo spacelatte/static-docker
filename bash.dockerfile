@@ -1,6 +1,7 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/bash -f
 
-FROM debian:testing as build
+ARG BASE=debian:testing
+FROM ${BASE} as build
 
 RUN apt update
 RUN apt install -y \
@@ -61,7 +62,7 @@ RUN true \
 
 RUN make -C "${BUILD}" -j$(nproc) all install
 
-FROM debian:testing as runtime
+FROM ${BASE} as runtime
 COPY --from=build /opt /opt
 ENTRYPOINT [ "/opt/bin/bash" ]
 CMD        [ "-l" ]

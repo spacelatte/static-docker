@@ -1,6 +1,7 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/figlet -f
 
-FROM debian:testing as build
+ARG BASE=debian:stable
+FROM ${BASE} as build
 
 RUN apt update
 RUN apt install -y \
@@ -14,7 +15,7 @@ RUN curl -#L ftp://ftp.figlet.org/pub/figlet/program/unix//figlet-${VERSION}.tar
 ARG PREFIX=/opt
 RUN make -j$(nproc) prefix="${PREFIX}" all install
 
-FROM debian:testing as runtime
+FROM ${BASE} as runtime
 COPY --from=build /opt /opt
 ENTRYPOINT [ "/opt/bin/figlet" ]
 CMD        [ "--help" ]
