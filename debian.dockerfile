@@ -7,6 +7,7 @@ RUN apt install -y \
 	man \
 	git \
 	vim \
+	curl \
 	tmux \
 	ncdu \
 	nano \
@@ -85,4 +86,4 @@ RUN echo "en_US.UTF-8 UTF-8" \
 
 WORKDIR /tmp
 ENV USER root
-CMD login -f $USER || su - $USER
+CMD login -f ${USER} || su - ${USER}
