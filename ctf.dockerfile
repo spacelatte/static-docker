@@ -14,4 +14,4 @@ RUN apt install -y \
 	make \
 	nasm \
 	vnc4server \
-	--yes
+	--no-install-recommends

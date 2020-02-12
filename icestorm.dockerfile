@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/icestorm -f
 
-FROM debian
+FROM debian:stable
 
 RUN apt update
 RUN apt install -y \
@@ -20,3 +20,4 @@ RUN git clone --depth=1 https://github.com/cliffordwolf/yosys.git yosys
 RUN make -C yosys -j $(nproc) install
 
 RUN git clone --depth=1 https://github.com/tinyfpga/TinyFPGA-B-Series.git tinyfpga-b
+#RUN make -C tinyfpga-b -j $(nproc)
