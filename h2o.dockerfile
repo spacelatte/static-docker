@@ -1,6 +1,7 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/h2o -f
 
-FROM debian:stable as build
+ARG BASE=debian:stable
+FROM ${BASE} as build
 
 RUN apt update
 RUN apt install -y \
@@ -18,7 +19,7 @@ RUN unzip -jo "$(basename "${H2O_URL}")" "h2o-${H2O_VER}/h2o.jar"
 RUN rm -rf    "$(basename "${H2O_URL}")"
 
 
-FROM debian:stable
+FROM ${BASE}
 
 RUN apt update
 RUN apt install -y \
