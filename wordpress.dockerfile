@@ -1,7 +1,5 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/wordpress -f
 
-#FROM centos:6
-
 FROM debian:9
 
 ARG MYSQL_USER=root
