@@ -1,6 +1,7 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/toolbox -f
 
-FROM debian
+ARG BASE=debian:stable
+FROM ${BASE} as build
 
 RUN apt update
 RUN apt install -y \
@@ -8,11 +9,11 @@ RUN apt install -y \
 	pkg-config ninja-build
 
 ENV CC   clang
-ENV DIR  syscore
+ENV DIR  repo
 ENV REPO https://android.googlesource.com/platform/system/core
 
 WORKDIR /data
-RUN git clone -q --progress --depth=1 $REPO $DIR
+RUN git clone -q --progress --depth=1 "${REPO}" "${DIR}"
 
 #RUN (cd $DIR; autoreconf -i) && $DIR/configure
 #CMD make -C . -j $(nproc)
