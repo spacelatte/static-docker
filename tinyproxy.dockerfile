@@ -7,18 +7,17 @@ RUN apt update && \
 	apt install -y \
 	build-essential git make automake asciidoc
 
-ENV PORT 80
+ENV DIR repo
 ENV REPO https://github.com/tinyproxy/tinyproxy.git
 
-EXPOSE ${PORT}
 WORKDIR /data
-
 RUN git clone --depth=1 "${REPO}" "${DIR}"
 RUN (cd "${DIR}" && bash autogen.sh) && "${DIR}/configure"
 
 RUN make -C "." -j $(nproc) && \
 	make -C "." -j $(nproc) install
 
+ENV PORT 80
 RUN ( \
 		echo "user         root";    \
 		echo "group        root";    \
@@ -29,5 +28,6 @@ RUN ( \
 		echo "startservers 9";       \
 	) | tee -a tinyproxy.conf
 
+EXPOSE ${PORT}
 ENTRYPOINT [ "tinyproxy", "-d" ]
 CMD        [ "-c" , "tinyproxy.conf" ]
