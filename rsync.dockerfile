@@ -1,6 +1,7 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/rsync -f
 
-FROM debian
+ARG BASE=debian:stable
+FROM ${BASE} as build
 
 RUN apt update
 RUN apt install -y \
@@ -9,13 +10,16 @@ RUN apt install -y \
 	&& apt clean
 
 ENV CC   clang
-ENV DIR  rsync
+ENV DIR  repo
 ENV REPO git://git.samba.org/rsync.git
 
 WORKDIR /data
-
-RUN git clone --recursive --depth=1 $REPO $DIR
-RUN (cd $DIR && ./configure \
+RUN git clone --recursive --depth=1 "${REPO}" "${DIR}"
+RUN (cd "${DIR}" && ./configure \
 	--enable-static --with-included-popt --with-included-zlib --disable-ipv6)
+RUN make -C "${DIR}" -j $(nproc)
 
-CMD make -C $DIR -j $(nproc) && $DIR/rsync
+FROM ${BASE}
+COPY --from=build /data/repo/rsync ./
+ENTRYPOINT [ "rsync" ]
+CMD        [ ]

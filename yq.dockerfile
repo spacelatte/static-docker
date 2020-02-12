@@ -1,6 +1,7 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/yq -f
 
-FROM debian:testing as build
+ARG BASE=debian:testing
+FROM ${BASE} as build
 
 RUN apt update
 RUN apt install -y \
@@ -13,6 +14,6 @@ ENV GO111MODULE on
 RUN go get -a -ldflags '-s' github.com/mikefarah/yq/v2
 
 FROM scratch
-COPY --from=build /data/bin/yq /yq
-ENTRYPOINT [ "/yq" ]
+COPY --from=build /data/bin/yq ./yq
+ENTRYPOINT [ "./yq"   ]
 CMD        [ "--help" ]

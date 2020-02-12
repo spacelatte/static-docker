@@ -1,9 +1,10 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/rig -f
 
-FROM debian as build
+ARG BASE=debian:stable
+FROM ${BASE} as build
 
 RUN apt update
-RUN apt install -y build-essential curl git gcc 
+RUN apt install -y build-essential curl git gcc
 
 WORKDIR /data
 RUN curl -#L https://liquidtelecom.dl.sourceforge.net/project/rig/rig/1.11/rig-1.11.tar.gz \
@@ -13,7 +14,7 @@ RUN (echo "#include <cstring>"; cat rig.cc ) > rig.cc.new && mv rig.cc.new rig.c
 RUN mkdir -p /usr/local/man/man6
 RUN make -j$(nproc) && make -j$(nproc) install
 
-FROM debian
+FROM ${BASE}
 COPY --from=build /usr/local /usr/local
 ENTRYPOINT [ "rig" ]
 CMD        [ ]
