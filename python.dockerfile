@@ -1,7 +1,8 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/python -f
 
 ARG PREFIX=/opt
-FROM debian:testing as build
+ARG BASE=debian:testing
+FROM ${BASE} as build
 
 RUN apt update
 RUN apt install -y \
@@ -325,7 +326,7 @@ RUN rm -rf \
 #RUN make -j$(nproc) python build_all LINKFORSHARED=" "
 #RUN make -j$(nproc) bininstall libinstall sharedinstall
 
-FROM debian:testing
+FROM ${BASE}
 ARG PREFIX
 COPY --from=build "${PREFIX}" "${PREFIX}"
 #RUN "${PREFIX}/bin/python3" -c 'import socket;\
