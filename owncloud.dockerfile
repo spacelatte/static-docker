@@ -27,18 +27,18 @@ RUN chown -R www-data:www-data /data
 RUN echo service nginx configtest
 
 RUN ( \
-	echo "<VirtualHost *:80>";                                 \
-	echo "	#LogLevel info ssl:warn";                          \
-	echo "	#ServerName www.example.com";                      \
-	echo "	ServerAdmin webmaster@localhost";                  \
-	echo "	DocumentRoot /srv/www";                            \
-	echo "	#ErrorLog ${APACHE_LOG_DIR}/error.log";            \
-	echo "	#CustomLog ${APACHE_LOG_DIR}/access.log combined"; \
-	echo "	#Include conf-available/serve-cgi-bin.conf";       \
-	echo "	<Directory /srv/www >";                            \
-	echo "		Require all granted";                          \
-	echo "	</Directory>";                                     \
-	echo "</VirtualHost>";                                     \
+	echo "<VirtualHost *:80>"                                  ; \
+	echo "  #LogLevel info ssl:warn"                           ; \
+	echo "  #ServerName www.example.com"                       ; \
+	echo "  ServerAdmin webmaster@localhost"                   ; \
+	echo "  DocumentRoot /srv/www"                             ; \
+	echo "  #ErrorLog \${APACHE_LOG_DIR}/error.log"            ; \
+	echo "  #CustomLog \${APACHE_LOG_DIR}/access.log combined" ; \
+	echo "  #Include conf-available/serve-cgi-bin.conf"        ; \
+	echo "  <Directory /srv/www >"                             ; \
+	echo "    Require all granted"                             ; \
+	echo "  </Directory>"                                      ; \
+	echo "</VirtualHost>"                                      ; \
 ) | tee /etc/apache2/sites-enabled/main.conf
 
 CMD true \
