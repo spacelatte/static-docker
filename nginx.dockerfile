@@ -2,7 +2,7 @@
 
 ARG VERSION=1.17.8
 ARG PREFIX=/nginx
-ARG BASE=debian:stable
+ARG BASE
 # you may use 'centos:7' or 'debian:stable' atm
 
 FROM ${BASE} as build
@@ -11,6 +11,7 @@ ARG BASE
 #FROM centos:7 as build
 RUN echo "${BASE}" | grep -qi centos \
 	&& yum install -y \
+		git \
 		gcc \
 		gcc-c++ \
 		make \
@@ -43,13 +44,37 @@ RUN echo "${BASE}" | grep -qi debian \
 		zlib1g-dev \
 		libatomic1 \
 		libgd-dev \
-		curl perl \
+		curl \
+		perl \
+		git \
 	|| true
 
 ARG VERSION
 WORKDIR /data
 RUN curl -#L "https://nginx.org/download/nginx-${VERSION}.tar.gz" \
-	| tar --strip=1 -xz
+	| tar --strip=1 -xzC .
+
+ARG ZLIB=zlib.src
+RUN mkdir -p "${ZLIB}"
+RUN curl -#L "http://zlib.net/zlib-1.2.11.tar.gz" \
+	| tar --strip=1 -xzC "${ZLIB}"
+
+ARG PCRE=pcre.src
+RUN mkdir "${PCRE}"
+RUN curl -#L "https://ftp.pcre.org/pub/pcre/pcre-8.43.tar.gz" \
+	| tar --strip=1 -xzC "${PCRE}"
+
+RUN git clone --depth=1 \
+	"https://github.com/wdaike/ngx_upstream_jdomain.git" \
+	"ngx_upstream_jdomain"
+
+RUN git clone --depth=1 \
+	"https://github.com/cep21/healthcheck_nginx_upstreams.git" \
+	"healthcheck_nginx_upstreams"
+
+RUN git clone --depth=1 \
+	"https://github.com/yaoweibin/nginx_upstream_check_module.git" \
+	"nginx_upstream_check_module"
 
 ARG PREFIX
 RUN ( ./configure \
@@ -96,9 +121,13 @@ RUN ( ./configure \
 		--with-cpp_test_module                  \
 		--with-compat                           \
 		--with-pcre                             \
+		--with-pcre="${PCRE}"                   \
 		--with-pcre-jit                         \
 		--with-libatomic                        \
 		--with-debug                            \
+		--with-zlib="${ZLIB}"                   \
+		--add-module="ngx_upstream_jdomain"        \
+		--add-module="nginx_upstream_check_module" \
 	)
 
 #&& mkdir -p ./build \
