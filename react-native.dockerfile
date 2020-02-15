@@ -4,7 +4,9 @@ FROM debian:sid
 
 RUN apt update
 RUN apt install -y \
-	curl unzip procps openjdk-8-jdk-headless
+	curl unzip procps openjdk-8-jdk-headless \
+	libpulse0 qemu-kvm libgl1 libxcomposite1 \
+	libxcursor1 libasound2 qt5dxcb-plugin
 
 #VOLUME /data
 WORKDIR /data
@@ -46,9 +48,8 @@ RUN yes | /usr/lib/android-sdk/tools/bin/sdkmanager --install \
 	'platform-tools'                                                                    \
 	'build-tools;29.0.2'                                                                \
 	'platforms;android-29'                                                              \
-	'tools'
-#	'emulator'
-#	"${IMAGE}"
+	'emulator' 'tools' "${IMAGE}"
+RUN yes | /usr/lib/android-sdk/tools/bin/sdkmanager --update
 
 RUN ( \
 	echo "#!/bin/bash"         ; \
@@ -71,6 +72,20 @@ RUN ( \
 #	-SecurityTypes VncAuth --I-KNOW-THIS-IS-INSECURE :0
 
 EXPOSE 5037 5554 5555
+ENV DISPLAY "${TARGET}:0"
+ENV PATH "${PATH}:/usr/lib/android-sdk/platform-tools"
 CMD /usr/lib/android-sdk/platform-tools/adb start-server        && \
 	/usr/lib/android-sdk/platform-tools/adb connect "${TARGET}" && \
-	PATH="${PATH}:/usr/lib/android-sdk/platform-tools" bash
+	/usr/lib/android-sdk/tools/bin/avdmanager create avd \
+		-k "${IMAGE}" -n "${NAME}" -d "${DEVICE}"     && \
+	/usr/lib/android-sdk/emulator/emulator \
+		-avd "${NAME}" \
+			-verbose \
+			-no-audio \
+			-delay-adb \
+			-no-boot-anim \
+			-gpu off
+
+# -no-qt \
+# -lowram \
+# -no-accel \
