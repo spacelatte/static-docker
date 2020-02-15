@@ -2,14 +2,14 @@
 
 ARG VERSION=1.17.8
 ARG PREFIX=/nginx
-ARG BASE
+ARG BASE=debian:latest
 # you may use 'centos:7' or 'debian:stable' atm
 
 FROM ${BASE} as build
 ARG BASE
 
 #FROM centos:7 as build
-RUN echo "${BASE}" | grep -qi centos \
+RUN echo "${BASE}" | grep -qi "centos" \
 	&& yum install -y \
 		git \
 		gcc \
@@ -29,7 +29,7 @@ RUN echo "${BASE}" | grep -qi centos \
 	|| true
 
 #FROM debian:stable as build
-RUN echo "${BASE}" | grep -qi debian \
+RUN echo "${BASE}" | grep -qi "debian" \
 	&& apt update \
 	&& apt install -y \
 		build-essential \
