@@ -15,7 +15,7 @@ RUN echo "mysql-server mysql-server/root_password_again password mypassword" | d
 
 ENV S9S_ROOT_PASSWORD 1234
 ENV S9S_CMON_PASSWORD 1234
-ENV INNODB_BUFFER_POOL_SIZE 128
+ENV INNODB_BUFFER_POOL_SIZE 16
 
 RUN apt install -y mysql-server
 RUN bash install-cc
