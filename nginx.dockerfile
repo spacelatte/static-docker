@@ -126,7 +126,6 @@ RUN ( ./configure \
 		--with-libatomic                        \
 		--with-debug                            \
 		--with-zlib="${ZLIB}"                   \
-		--add-module="ngx_upstream_jdomain"        \
 		--add-module="nginx_upstream_check_module" \
 	)
 
@@ -139,7 +138,7 @@ RUN ( ./configure \
 
 RUN make \
 	-C . \
-	-j$(nproc) \
+	-j 1 \
 	build install
 
 FROM ${BASE}
