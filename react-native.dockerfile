@@ -84,6 +84,7 @@ CMD /usr/lib/android-sdk/platform-tools/adb start-server        && \
 			-no-audio \
 			-delay-adb \
 			-no-boot-anim \
+			-no-accel \
 			-gpu off
 
 # -no-qt \
