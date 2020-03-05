@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/kali -f
 
-FROM kalilinux/kali-linux-docker
+FROM kalilinux/kali:latest
 
 RUN apt update
 RUN apt install -y kali-tools-wireless              && apt autoclean && apt clean
