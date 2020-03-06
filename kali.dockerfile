@@ -2,6 +2,8 @@
 
 FROM kalilinux/kali:latest
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt update
 RUN apt install -y kali-tools-wireless              && apt autoclean && apt clean
 RUN apt install -y kali-tools-windows-resources     && apt autoclean && apt clean
