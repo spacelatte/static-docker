@@ -5,22 +5,21 @@ FROM debian:9
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update
 RUN apt install -y \
-	racoon iptables procps nano
+	iptables \
+	racoon \
+	procps
 
 ARG USER=vpn
-ARG PASS=net
 ARG GROUP=users
 RUN useradd -MNro \
-	-u "${UID:-999}" \
+	-s "/usr/sbin/nologin" \
+	-u "${UID:-9999}" \
 	-g "${GROUP}" \
-	-s "/bin/sh" \
 	-d "/home" \
 	"${USER}"
 RUN passwd -du "${USER}"
-RUN echo "${USER}:${PASS}" | chpasswd | tee /password.txt
 
 WORKDIR /etc/racoon
-RUN echo "*\trandompsk" | tee -a psk.txt
 
 # see: https://www.daemon-systems.org/man/racoon.conf.5.html
 RUN ( \
@@ -67,17 +66,19 @@ RUN ( \
 	echo "complex_bundle on;"          ; \
 ) | tee -a racoon.conf
 
-EXPOSE 500/udp 4500/udp
 RUN mkdir --mode=0777 -p /var/run/racoon
+ENV PSK  "randompsk"
+ENV PASS "userpass0"
+EXPOSE 500/udp 4500/udp
 CMD ( \
+	echo "*\t${PSK}" | tee -a psk.txt; \
+	echo "${USER}:${PASS}" | chpasswd; \
 	iptables -v -t nat -A POSTROUTING -j MASQUERADE; \
 	sysctl -w net.ipv4.ip_forward=1; \
-	cat -n /password.txt; \
-	tail -1 psk.txt; \
+	modprobe af_key; \
 	racoon -4Fdv || ( \
 		export CODE=$?; \
 		cat -n racoon.conf; \
 		exit $((CODE)); \
 	); \
 )
-
