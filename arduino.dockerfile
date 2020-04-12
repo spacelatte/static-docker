@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/arduino -f
 
-FROM debian:10
+FROM debian:stable
 
 RUN apt update
 RUN apt install -y \
@@ -16,7 +16,7 @@ RUN curl -#Lk "https://github.com/arduino/arduino-cli/releases/download/${VERSIO
 
 
 RUN curl -skL https://github.com/arduino/Arduino/wiki/Unofficial-list-of-3rd-party-boards-support-urls \
-	| grep -oE '"http[^"]+\.json"' \
+	| grep -oE '"http(s)?://[^"]+\.json"' \
 	| tr -d '"' \
 	| xargs -n1 -P$(nproc) -I% -- bash -c 'curl -Ifsm1 "%" | grep -qi "application/json" && echo "%"' \
 	| sort -u \
@@ -43,8 +43,8 @@ ENV BOARDS    "arduino:avr"
 ENV LIBRARIES "SD TFT GSM Servo Keyboard Esplora Firmata LiquidCrystal Ethernet ArduinoBLE"
 
 RUN ( \
-		arduino-cli -v core install $BOARDS    ; \
-		arduino-cli -v lib  install $LIBRARIES ; \
+		arduino-cli -v core install ${BOARDS}    ; \
+		arduino-cli -v lib  install ${LIBRARIES} ; \
 	)
 
 RUN echo 'void setup() { }; void loop() { };' | tee -a /tmp/tmp.ino
@@ -65,9 +65,10 @@ CMD ( \
 			| xargs -0 -n1 -I% -- \
 				bash -c 'curl -#Lk "%" | tar -xzC ~/Arduino/libraries' ; \
 		arduino-cli -v compile -b "${BOARD}" --show-properties /tmp    ; \
-		arduino-cli -v compile \
+		arduino-cli -v compile -o "out.${BOARD}.bin" \
 			--build-properties "${PARAMS}" \
-			--warnings default \
-			--fqbn $BOARD \
-			$(dirname $(find . -iname "*.ino")) ; \
+			--build-path "$(pwd)/.build" \
+			--warnings "default" \
+			--fqbn "${BOARD}"  \
+			"$(dirname "$(find "$(pwd)" -iname "*.ino" | sort | head -1)")" ; \
 	)
