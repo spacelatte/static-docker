@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/graphviz -f
 
-FROM debian
+FROM debian:stable
 
 WORKDIR /data
 

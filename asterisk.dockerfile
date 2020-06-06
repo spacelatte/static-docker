@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/asterisk -f
 
-FROM debian:10
+FROM debian:stable
 
 RUN apt update
 RUN apt install -y \
