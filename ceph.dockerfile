@@ -8,3 +8,4 @@ RUN apt install -y build-essential git
 WORKDIR /data
 RUN git clone --depth=1 https://github.com/ceph/ceph.git ./
 
+# TODO: WIP
