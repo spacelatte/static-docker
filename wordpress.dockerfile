@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/wordpress -f
 
-FROM debian:9
+FROM debian:stable
 
 ARG MYSQL_USER=root
 ARG MYSQL_PASS=password
@@ -16,19 +16,18 @@ RUN apt update
 RUN apt install -y \
 	curl nginx php-fdomdocument \
 	php-fpm php-mysql php-curl php-gd \
-	ccze default-mysql-server
+	ccze default-mysql-server nano
 
-ARG VERSION=5.3.2
+ARG VERSION=5.4.1
 WORKDIR /data
-RUN curl -#L https://wordpress.org/wordpress-${VERSION}.tar.gz \
+RUN curl -#L "https://wordpress.org/wordpress-${VERSION}.tar.gz" \
 	| tar --strip=1 -oxz
 
-ARG PHP_VER=7.0
-#ARG HOSTNAME=localhost
+ARG PHP_VER=7.3
 RUN rm /etc/nginx/sites-enabled/default && ( \
 		echo "server_tokens off;"                                       ; \
 		echo "client_max_body_size 100M;"                               ; \
-		echo "error_log /tmp/log info;"                                 ; \
+		echo "error_log /tmp/log   info;"                               ; \
 		echo "server {"                                                 ; \
 		echo "  listen  80     default_server;"                         ; \
 		echo "  listen 443 ssl default_server;"                         ; \
@@ -40,21 +39,31 @@ RUN rm /etc/nginx/sites-enabled/default && ( \
 		echo "      \$uri"                                              ; \
 		echo "      \$uri/"                                             ; \
 		echo "      \$uri.html"                                         ; \
-		echo "      #@extensionless-php"                                ; \
-		echo "      #\$uri.php\$is_args\$args"                          ; \
+		echo "      @extensionless-php"                                 ; \
+		echo "      \$uri.php\$is_args\$args"                           ; \
 		echo "      = /index.php\$is_args\$args"                        ; \
-		echo "      #=404"                                              ; \
 		echo "      ;"                                                  ; \
 		echo "  }"                                                      ; \
+		echo "  location ~ ^/wp-content/.*\.log$ {"                     ; \
+		echo "    return 403 'i see what u did there';"                 ; \
+		echo "  }"                                                      ; \
 		echo "  location ~ \.php$ {"                                    ; \
-		echo "    #proxy_set_header  Host localhost;"                   ; \
-		echo "    #proxy_set_header Host \$hostname;"                   ; \
+		echo "    set \$server 'unix:/run/php/php${PHP_VER}-fpm.sock';" ; \
 		echo "    #try_files \$uri = /index.php\$is_args\$args;"        ; \
 		echo "    #include fastcgi_params;"                             ; \
 		echo "    include snippets/fastcgi-php.conf;"                   ; \
-		echo "    fastcgi_intercept_errors on;"                         ; \
-		echo "    fastcgi_pass unix:/run/php/php${PHP_VER}-fpm.sock;"   ; \
-		echo "    #proxy_redirect http://localhost/ /;"                 ; \
+		echo "    fastcgi_intercept_errors off;"                        ; \
+		echo "    fastcgi_pass '\$server';"                             ; \
+		echo "      set \$designation '\$hostname';"                    ; \
+		echo "      proxy_set_header Host '\$designation';"             ; \
+		echo "      fastcgi_param HTTP_HOST '\$designation';"           ; \
+		echo "      add_header 'Host' '\$designation' always;"          ; \
+		echo "      proxy_redirect '/' '/' ;"                           ; \
+		echo "      proxy_redirect 'https://\$designation/' '/' ;"      ; \
+		echo "      proxy_redirect 'http://\$designation/'  '/' ;"      ; \
+		echo "      sub_filter     'https://\$designation/' '/' ;"      ; \
+		echo "      sub_filter     'http://\$designation/'  '/' ;"      ; \
+		echo "      sub_filter_once off;"                               ; \
 		echo "  }"                                                      ; \
 		echo "  location @extensionless-php {"                          ; \
 		echo "    rewrite ^(.+)$ \$1.php last;"                         ; \
@@ -106,16 +115,16 @@ RUN ( \
 		echo "define('SECURE_AUTH_SALT', '$(bash random.sh 24)' );"    ; \
 		echo "define('LOGGED_IN_SALT',   '$(bash random.sh 24)' );"    ; \
 		echo "define('NONCE_SALT',       '$(bash random.sh 24)' );"    ; \
-		echo "define('WP_DEBUG',                   true    );"         ; \
-		echo "define('WP_DEBUG_LOG',               true    );"         ; \
+		echo "define('WP_DEBUG',                   false   );"         ; \
+		echo "define('WP_DEBUG_LOG',               false   );"         ; \
 		echo "define('WP_DEBUG_DISPLAY',           false   );"         ; \
 		echo "define('DISABLE_WP_CRON',            false   );"         ; \
 		echo "define('AUTOMATIC_UPDATER_DISABLED', false   );"         ; \
-		echo "//define('WP_HOME',       getenv('WP_HOME')    );"       ; \
-		echo "//define('WP_SITEURL',    getenv('WP_SITEURL') );"       ; \
-		echo "define('FORCE_SSL',             false );"                ; \
-		echo "define('FORCE_SSL_ADMIN',       false );"                ; \
-		echo "define('FORCE_SSL_LOGIN',       false );"                ; \
+		echo "define('WP_HOME',         getenv('WP_HOME')    );"       ; \
+		echo "define('WP_SITEURL',      getenv('WP_SITEURL') );"       ; \
+		echo "define('FORCE_SSL',       getenv('WP_SSL')       === 'true' );" ; \
+		echo "define('FORCE_SSL_ADMIN', getenv('WP_SSL_ADMIN') === 'true' );" ; \
+		echo "define('FORCE_SSL_LOGIN', getenv('WP_SSL_LOGIN') === 'true' );" ; \
 		echo "define('WP_AUTO_UPDATE_CORE', 'minor' );"                ; \
 		echo "if ( ! defined( 'ABSPATH' ) ) {"                         ; \
 		echo "  define( 'ABSPATH', dirname( __FILE__ ) . '/' );"       ; \
@@ -126,6 +135,7 @@ RUN ( \
 	) | tee ./wp-config.php
 
 RUN touch ./wp-content/debug.log
+RUN echo "<?php header('Content-Type: text/plain'); var_export(\$_SERVER); ?>" | tee ./test.php
 RUN echo "<?php phpinfo(); ?>" | tee ./info.php
 RUN chown -R www-data:users .
 RUN truncate -s0 /var/log/mysql/error.log
@@ -150,6 +160,10 @@ RUN ( \
 	) | tee -a /etc/nginx/sites-enabled/wordpress
 
 #VOLUME /var/lib/mysql
+ENV SVC_MYSQL "mysql"
+ENV SVC_NGINX "nginx"
+ENV SVC_WEB   "${SVC_NGINX}"
+ENV SVC_PHP   "php${PHP_VER}-fpm"
 ENV PHP_VER "${PHP_VER}"
 ENV DB_USER "${MYSQL_USER:-root}"
 ENV DB_PASS "${MYSQL_PASS:-1234}"
@@ -158,14 +172,18 @@ ENV DB_HOST "${MYSQL_HOST:-localhost}"
 ENV DB_NAME "${MYSQL_NAME:-wordpress}"
 ENV WP_HOME    ""
 ENV WP_SITEURL ""
+ENV WP_SSL       "false"
+ENV WP_SSL_ADMIN "false"
+ENV WP_SSL_LOGIN "false"
 #RUN chown -R mysql:mysql /var/lib/mysql /var/run/mysqld
 CMD date; hostname; \
-	test -z "${WP_HOME}"    &&    WP_HOME="http://localhost" ; \
-	test -z "${WP_SITEURL}" && WP_SITEURL="http://localhost" ; \
+	test -z "${WP_HOME}"    &&    WP_HOME="http://${HOSTNAME}" ; \
+	test -z "${WP_SITEURL}" && WP_SITEURL="http://${HOSTNAME}" ; \
 	/bin/sh -c export \
 		| grep -e DB_ -e WP_ \
 		| tee -a "/etc/default/php-fpm${PHP_VER}" >/dev/null; \
-	for i in "mysql" "php${PHP_VER}-fpm" "nginx"; do \
+	for i in "${SVC_MYSQL}" "${SVC_PHP}" "${SVC_WEB}"; do \
+		test -z "${i}" && continue; \
 		echo "Staring: ${i}"; \
 		service "${i}" start; \
 	done; \
@@ -190,14 +208,14 @@ CMD date; hostname; \
 		/var/log/nginx/error.log \
 		/var/log/mysql/error.log \
 		./wp-content/debug.log \
-		/tmp/log \
-		| ccze -A
+		/tmp/log #| ccze -A
 
 HEALTHCHECK \
 	--timeout=10s \
-	--interval=5m \
+	--interval=1m \
 	--start-period=10s \
-	CMD curl -skILfm1 http://0:80
+	CMD nginx -s reload; \
+	curl -skILfm1 http://0:80
 
 EXPOSE \
 	80 \
@@ -207,3 +225,18 @@ EXPOSE \
 VOLUME \
 	/var/lib/mysql \
 	/data/wp-content
+
+#  Example;
+#    docker run --hostname=my.blog --rm -itd -p80:80 -p443:443 pvtmert/wordpress
+#    docker run --hostname=my.blog --rm -itd \
+#      -p80:80 -p443:443 \
+#      -e SVC_MYSQL="" \
+#      -e DB_PORT="3306" \
+#      -e DB_HOST="mysql.my.blog" \
+#      -e DB_USER="secure_blog_user" \
+#      -e DB_PASS="secure_blog_pasword" \
+#      -e DB_NAME="my_wordpress_blog_schema" \
+#      -e WP_SSL=true \
+#      -e WP_SSL_ADMIN=true \
+#      -e WP_SSL_LOGIN=true \
+#      pvtmert/wordpress
