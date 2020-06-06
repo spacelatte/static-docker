@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/soong -f
 
-FROM debian
+FROM debian:stable
 
 RUN apt update
 RUN apt install -y \

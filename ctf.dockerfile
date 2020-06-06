@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/ctf -f
 
-FROM debian
+FROM debian:stable
 
 RUN apt update
 RUN apt dist-upgrade -y

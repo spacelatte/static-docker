@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/debug -f
 
-FROM debian:10
+FROM debian:stable
 
 # you may use lldb
 ARG DEBUGGER=gdb
