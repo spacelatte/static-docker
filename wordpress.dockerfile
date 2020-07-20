@@ -176,7 +176,12 @@ ENV WP_SSL       "false"
 ENV WP_SSL_ADMIN "false"
 ENV WP_SSL_LOGIN "false"
 #RUN chown -R mysql:mysql /var/lib/mysql /var/run/mysqld
-CMD date; hostname; \
+CMD date; hostname; trap '\
+		for i in "${SVC_MYSQL}" "${SVC_PHP}" "${SVC_WEB}"; do \
+			service "${i}" stop; \
+		done; \
+		killall tail; \
+	'  SIGINT SIGTERM; \
 	test -z "${WP_HOME}"    &&    WP_HOME="http://${HOSTNAME}" ; \
 	test -z "${WP_SITEURL}" && WP_SITEURL="http://${HOSTNAME}" ; \
 	/bin/sh -c export \
