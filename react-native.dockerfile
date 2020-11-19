@@ -35,7 +35,6 @@ RUN npm i -g npm yarn react-native-cli
 
 RUN yes | /usr/lib/android-sdk/tools/bin/sdkmanager --update
 RUN yes | /usr/lib/android-sdk/tools/bin/sdkmanager --install \
-	'extras;android;gapid;3'                                                            \
 	'extras;android;m2repository'                                                       \
 	'extras;google;google_play_services'                                                \
 	'extras;google;instantapps'                                                         \

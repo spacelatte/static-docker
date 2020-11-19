@@ -45,7 +45,7 @@ jobs:
     - name: Build containers
       run: |
         PLATFORMS=$(tr -s '[:space:]' ',' <<< "${DOCKER_PLATFORMS}" )
-        for FILE in *.Dockerfile; do
+        for FILE in *.dockerfile; do
           docker buildx build \
           --cache-from="${DOCKER_USER}/cache:${FILE//.Dockerfile}" \
           --cache-to="${DOCKER_USER}/cache:${FILE//.Dockerfile}" \
