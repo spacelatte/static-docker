@@ -54,5 +54,5 @@ jobs:
           --push \
           -f="${FILE}" \
           -t="${DOCKER_USER}/${FILE//.Dockerfile}" \
-          "$(mktemp -d)"
+          "$(mktemp -d)" || echo "skipping ${FILE}"
         done
