@@ -1,21 +1,15 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/tableau -f
 
+ARG version=2020.2.3
 FROM centos/systemd
+RUN yum install -y \
+	iputils iproute sudo bash-completion \
+	java net-tools redhat-lsb-core freeglut \
+	fuse-libs fuse gdb chrpath pciutils
 
-WORKDIR /data
+#java-1.8.0-openjdk-headless
 
-ARG version=2019.3.1
-
-ENV pkg_tabcmd https://downloads.tableau.com/esdalt/\${version}/tableau-tabcmd-\${version//./-}.noarch.rpm
-ENV pkg_server https://downloads.tableau.com/esdalt/\${version}/tableau-server-\${version//./-}.x86_64.rpm
-
-#ADD "${pkg_tabcmd}" ./tableau-tabcmd.deb
-#ADD "${pkg_server}" ./tableau-server.deb
-
-RUN eval curl -#Lo ./tableau-tabcmd.rpm "${pkg_tabcmd}"
-RUN eval curl -#Lo ./tableau-server.rpm "${pkg_server}"
-
-# hack
+# hacks
 RUN mkdir -p /run/systemd/system
 
 RUN touch /usr/local/bin/sysctl \
@@ -31,6 +25,18 @@ RUN echo 'echo; echo mem: 32768' \
 	&& chmod +x /usr/local/bin/free
 RUN echo mem: $(free -m | awk 'NR == 2 { print $2; }')
 
+RUN echo "PATH=/usr/local/bin:$PATH" | tee -a /etc/environment
+
+WORKDIR /data
+# https://www.tableau.com/downloads/server/rpm
+# https://www.tableau.com/support/releases/server/
+ENV pkg_tabcmd https://downloads.tableau.com/esdalt/\${version}/tableau-tabcmd-\${version//./-}.noarch.rpm
+ENV pkg_server https://downloads.tableau.com/esdalt/\${version}/tableau-server-\${version//./-}.x86_64.rpm
+
+# https://www.tableau.com/downloads/server/deb
+#ADD "${pkg_tabcmd}" ./tableau-tabcmd.deb
+#ADD "${pkg_server}" ./tableau-server.deb
+
 #RUN export LC_ALL=C; \
 #	sed -i'' 's:exit "$insufficient":exit 0:g' \
 #	./tableau-server.rpm; \
@@ -44,19 +50,21 @@ RUN echo mem: $(free -m | awk 'NR == 2 { print $2; }')
 #	./tableau-server.rpm
 
 #RUN dpkg -i tableau-tabcmd.deb tableau-server.deb || true
-#RUN echo "PATH=/usr/local/bin:$PATH" | tee /etc/environment
-RUN yum install -y iputils iproute sudo
-RUN yum install -y \
-	./tableau-tabcmd.rpm \
-	./tableau-server.rpm \
-	|| rpm -i \
-	--nodigest \
-	--noscripts \
-	--notriggers \
-	--nosignature \
-	--nofiledigest \
-	./tableau-server.rpm \
-	|| echo something fucked up
+# RUN yum install -y \
+# 	./tableau-tabcmd.rpm \
+# 	./tableau-server.rpm \
+# 	|| rpm -i \
+# 	--nodigest \
+# 	--noscripts \
+# 	--notriggers \
+# 	--nosignature \
+# 	--nofiledigest \
+# 	./tableau-server.rpm \
+# 	|| echo something fucked up
+
+ARG version
+RUN eval rpm -ivh "${pkg_tabcmd}"
+RUN eval rpm -ivh --noscripts --notriggers "${pkg_server}"
 
 RUN ln -svf /opt/tableau/tabcmd/bin/tabcmd \
 	/usr/local/bin
@@ -75,7 +83,7 @@ RUN useradd -g users -m "${USER}"
 
 #RUN /opt/tableau/tabcmd/bin/tabcmd --accepteula
 RUN ( \
-		echo "runuser -l ${USER} -c 'sudo $(realpath $(which initialize-tsm)) --accepteula'"; \
+		echo "runuser -l '${USER}' -c 'sudo $(realpath $(which initialize-tsm)) --accepteula'"; \
 	) | tee -a /etc/rc.local
 
 RUN echo "${USER}:${USER}" | chpasswd

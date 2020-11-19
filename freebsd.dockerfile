@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build -t pvtmert/freebsd -f
 
-FROM debian:testing as build
+FROM debian:testing AS build
 
 RUN apt update
 RUN apt install -y \
@@ -12,7 +12,8 @@ RUN apt install -y \
 #	.
 
 WORKDIR /tmp
-RUN curl -#Lo repo.zip https://github.com/freebsd/freebsd/archive/master.zip
+RUN curl --compressed -#Lo repo.zip \
+	"https://github.com/freebsd/freebsd/archive/master.zip"
 #RUN unzip -od . repo.zip
 #RUN rm -f repo.zip
 #RUN mv -f freebsd-master /data

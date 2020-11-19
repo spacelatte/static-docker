@@ -14,7 +14,7 @@ RUN yes 2 \
 	| apt install -y \
 		curl steamcmd
 
-ENV PATH "/usr/games:$PATH"
+ENV PATH "/usr/games:$PATH:."
 ENV GAME "/home"
 
 RUN steamcmd \
@@ -27,3 +27,14 @@ ONBUILD RUN test -z "${APPID}" || steamcmd \
 	+force_install_dir "${GAME}" \
 	+app_update "${APPID}" \
 	+quit
+
+RUN ( \
+		echo "#!/usr/bin/env bash -x --"; \
+		echo "steamcmd +login anonymous +force_install_dir "\${GAME}" +app_update "\${APPID}" +quit"; \
+		echo "for arg in \"\$@\"; do printf '%3d: %s\\\n' \"\$((++i))\" \"\${arg}\"; done;"; \
+		echo "cd \"\${GAME}\" && exec \"\$@\"; exit;"; \
+	) | tee  /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT [ "bash", "-x", "--", "/entrypoint.sh" ]
+CMD        [ "steamcmd", "--help" ]

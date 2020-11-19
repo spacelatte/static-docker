@@ -19,120 +19,122 @@ RUN apt install -y \
 	ccze default-mysql-server nano
 
 ARG VERSION=5.4.1
-WORKDIR /data
-RUN curl -#L "https://wordpress.org/wordpress-${VERSION}.tar.gz" \
+WORKDIR /home
+RUN curl --compressed -#L "https://wordpress.org/wordpress-${VERSION}.tar.gz" \
 	| tar --strip=1 -oxz
 
 ARG PHP_VER=7.3
-RUN rm /etc/nginx/sites-enabled/default && ( \
-		echo "server_tokens off;"                                       ; \
-		echo "client_max_body_size 100M;"                               ; \
-		echo "error_log /tmp/log   info;"                               ; \
-		echo "server {"                                                 ; \
-		echo "  listen  80     default_server;"                         ; \
-		echo "  listen 443 ssl default_server;"                         ; \
-		echo "  index index.php index.html;"                            ; \
-		echo "  autoindex on;"                                          ; \
-		echo "  root /data;"                                            ; \
-		echo "  location / {"                                           ; \
-		echo "    try_files"                                            ; \
-		echo "      \$uri"                                              ; \
-		echo "      \$uri/"                                             ; \
-		echo "      \$uri.html"                                         ; \
-		echo "      @extensionless-php"                                 ; \
-		echo "      \$uri.php\$is_args\$args"                           ; \
-		echo "      = /index.php\$is_args\$args"                        ; \
-		echo "      ;"                                                  ; \
-		echo "  }"                                                      ; \
-		echo "  location ~ ^/wp-content/.*\.log$ {"                     ; \
-		echo "    return 403 'i see what u did there';"                 ; \
-		echo "  }"                                                      ; \
-		echo "  location ~ \.php$ {"                                    ; \
-		echo "    set \$server 'unix:/run/php/php${PHP_VER}-fpm.sock';" ; \
-		echo "    #try_files \$uri = /index.php\$is_args\$args;"        ; \
-		echo "    #include fastcgi_params;"                             ; \
-		echo "    include snippets/fastcgi-php.conf;"                   ; \
-		echo "    fastcgi_intercept_errors off;"                        ; \
-		echo "    fastcgi_pass '\$server';"                             ; \
-		echo "      set \$designation '\$hostname';"                    ; \
-		echo "      proxy_set_header Host '\$designation';"             ; \
-		echo "      fastcgi_param HTTP_HOST '\$designation';"           ; \
-		echo "      add_header 'Host' '\$designation' always;"          ; \
-		echo "      proxy_redirect '/' '/' ;"                           ; \
-		echo "      proxy_redirect 'https://\$designation/' '/' ;"      ; \
-		echo "      proxy_redirect 'http://\$designation/'  '/' ;"      ; \
-		echo "      sub_filter     'https://\$designation/' '/' ;"      ; \
-		echo "      sub_filter     'http://\$designation/'  '/' ;"      ; \
-		echo "      sub_filter_once off;"                               ; \
-		echo "  }"                                                      ; \
-		echo "  location @extensionless-php {"                          ; \
-		echo "    rewrite ^(.+)$ \$1.php last;"                         ; \
-		echo "  }"                                                      ; \
-		echo "}"                                                        ; \
-	) | tee /etc/nginx/sites-enabled/wordpress
+RUN rm /etc/nginx/sites-enabled/default \
+	&& echo "\n\
+server_tokens off;                                            \n\
+client_max_body_size 100M;                                    \n\
+error_log /tmp/log   info;                                    \n\
+server {                                                      \n\
+	listen  80     default_server;                            \n\
+	listen 443 ssl default_server;                            \n\
+	index index.php index.html;                               \n\
+	autoindex on;                                             \n\
+	root /home;                                               \n\
+	location / {                                              \n\
+		try_files                                             \n\
+			\$uri                                             \n\
+			\$uri/                                            \n\
+			\$uri.html                                        \n\
+			@extensionless-php                                \n\
+			\$uri.php\$is_args\$args                          \n\
+			= /index.php\$is_args\$args                       \n\
+			;                                                 \n\
+	}                                                         \n\
+	location ~ ^/wp-content/.*\.log$ {                        \n\
+		return 403 'i see what u did there';                  \n\
+	}                                                         \n\
+	location ~ \.php$ {                                       \n\
+		set \$server 'unix:/run/php/php${PHP_VER}-fpm.sock';  \n\
+		#try_files \$uri = /index.php\$is_args\$args;         \n\
+		#include fastcgi_params;                              \n\
+		include snippets/fastcgi-php.conf;                    \n\
+		fastcgi_intercept_errors off;                         \n\
+		fastcgi_pass '\$server';                              \n\
+			set \$designation '\$hostname';                   \n\
+			proxy_set_header Host '\$designation';            \n\
+			fastcgi_param HTTP_HOST '\$designation';          \n\
+			add_header 'Host' '\$designation' always;         \n\
+			proxy_redirect '/' '/' ;                          \n\
+			proxy_redirect 'https://\$designation/' '/' ;     \n\
+			proxy_redirect 'http://\$designation/'  '/' ;     \n\
+			sub_filter     'https://\$designation/' '/' ;     \n\
+			sub_filter     'http://\$designation/'  '/' ;     \n\
+			sub_filter_once off;                              \n\
+	}                                                         \n\
+	location @extensionless-php {                             \n\
+		rewrite ^(.+)$ \$1.php last;                          \n\
+	}                                                         \n\
+}                                                             \n\
+\n" | tee /etc/nginx/sites-enabled/wordpress
 
+#RUN cat /etc/nginx/sites-enabled/wordpress
 RUN nginx -t
 
-RUN echo "post_max_size=0"          | tee -a "/etc/php/${PHP_VER}/fpm/php.ini"
-RUN echo "max_file_uploads=100"     | tee -a "/etc/php/${PHP_VER}/fpm/php.ini"
-RUN echo "upload_max_filesize=100M" | tee -a "/etc/php/${PHP_VER}/fpm/php.ini"
-RUN echo "cgi.fix_pathinfo=0"       | tee -a "/etc/php/${PHP_VER}/fpm/php.ini"
+RUN echo "\n\
+post_max_size=0          \n\
+max_file_uploads=100     \n\
+upload_max_filesize=100M \n\
+cgi.fix_pathinfo=0       \n\
+\n" | tee -a "/etc/php/${PHP_VER}/fpm/php.ini"
 
-RUN ( \
-		echo ""; \
-		echo "[mysqld]"; \
-		echo "disable_log_bin"; \
-		echo "skip-grant-tables"; \
-		echo "innodb_buffer_pool_size = 32M"; \
-		echo "#default_authentication_plugin = mysql_native_password"; \
-	) | tee -a /etc/mysql/conf.d/mysqld.cnf
+RUN echo "\n\
+[mysqld]                                                \n\
+disable_log_bin                                         \n\
+skip-grant-tables                                       \n\
+innodb_buffer_pool_size = 32M                           \n\
+#default_authentication_plugin = mysql_native_password  \n\
+\n" | tee -a /etc/mysql/conf.d/mysqld.cnf
 
 RUN sed -i'' 's:127.0.0.1:0.0.0.0:g' $(grep -rl '127.0.0.1' /etc/mysql)
 RUN sed -i'' "s:;clear_env = no:clear_env = no:g" \
 	"/etc/php/${PHP_VER}/fpm/pool.d/www.conf"
 
-RUN ( \
-		echo "#!/usr/bin/env sh"                                       ; \
-		echo "cat /dev/urandom | tr -dc [:alnum:] | head -c \${1:-16}" ; \
-		echo "echo"                                                    ; \
-	) | tee ./random.sh
+RUN echo "\n\
+#!/usr/bin/env sh                                       \n\
+cat /dev/urandom | tr -dc [:alnum:] | head -c \${1:-16} \n\
+\n" | tee ./random.sh
 
-RUN ( \
-		echo "<?php"                                                   ; \
-		echo "\$table_prefix = 'wp_';"                                 ; \
-		echo "//define('RELOCATE',     true  );"                       ; \
-		echo "define('DB_CHARSET',  'utf8' );"                         ; \
-		echo "define('DB_COLLATE',  'utf8_general_ci' );"              ; \
-		echo "define('DB_NAME',     getenv('DB_NAME') );"              ; \
-		echo "define('DB_USER',     getenv('DB_USER') );"              ; \
-		echo "define('DB_PASSWORD', getenv('DB_PASS') );"              ; \
-		echo "define('DB_HOST',     getenv('DB_HOST') );"              ; \
-		echo "define('AUTH_KEY',         '$(bash random.sh 24)' );"    ; \
-		echo "define('SECURE_AUTH_KEY',  '$(bash random.sh 24)' );"    ; \
-		echo "define('LOGGED_IN_KEY',    '$(bash random.sh 24)' );"    ; \
-		echo "define('NONCE_KEY',        '$(bash random.sh 24)' );"    ; \
-		echo "define('AUTH_SALT',        '$(bash random.sh 24)' );"    ; \
-		echo "define('SECURE_AUTH_SALT', '$(bash random.sh 24)' );"    ; \
-		echo "define('LOGGED_IN_SALT',   '$(bash random.sh 24)' );"    ; \
-		echo "define('NONCE_SALT',       '$(bash random.sh 24)' );"    ; \
-		echo "define('WP_DEBUG',                   false   );"         ; \
-		echo "define('WP_DEBUG_LOG',               false   );"         ; \
-		echo "define('WP_DEBUG_DISPLAY',           false   );"         ; \
-		echo "define('DISABLE_WP_CRON',            false   );"         ; \
-		echo "define('AUTOMATIC_UPDATER_DISABLED', false   );"         ; \
-		echo "define('WP_HOME',         getenv('WP_HOME')    );"       ; \
-		echo "define('WP_SITEURL',      getenv('WP_SITEURL') );"       ; \
-		echo "define('FORCE_SSL',       getenv('WP_SSL')       === 'true' );" ; \
-		echo "define('FORCE_SSL_ADMIN', getenv('WP_SSL_ADMIN') === 'true' );" ; \
-		echo "define('FORCE_SSL_LOGIN', getenv('WP_SSL_LOGIN') === 'true' );" ; \
-		echo "define('WP_AUTO_UPDATE_CORE', 'minor' );"                ; \
-		echo "if ( ! defined( 'ABSPATH' ) ) {"                         ; \
-		echo "  define( 'ABSPATH', dirname( __FILE__ ) . '/' );"       ; \
-		echo "}"                                                       ; \
-		echo "require_once( ABSPATH . 'wp-settings.php' );"            ; \
-		echo "//error_log(print_r(get_defined_vars(), true));"         ; \
-		echo "?>"                                                      ; \
-	) | tee ./wp-config.php
+RUN echo "\n\
+<?php                                                           \n\
+\$table_prefix = 'wp_';                                         \n\
+//define('RELOCATE',     true  );                               \n\
+define('DB_CHARSET',  'utf8' );                                 \n\
+define('DB_COLLATE',  'utf8_general_ci' );                      \n\
+define('DB_NAME',     getenv('DB_NAME') );                      \n\
+define('DB_USER',     getenv('DB_USER') );                      \n\
+define('DB_PASSWORD', getenv('DB_PASS') );                      \n\
+define('DB_HOST',     getenv('DB_HOST') );                      \n\
+define('AUTH_KEY',         '$(bash random.sh 24)' );            \n\
+define('SECURE_AUTH_KEY',  '$(bash random.sh 24)' );            \n\
+define('LOGGED_IN_KEY',    '$(bash random.sh 24)' );            \n\
+define('NONCE_KEY',        '$(bash random.sh 24)' );            \n\
+define('AUTH_SALT',        '$(bash random.sh 24)' );            \n\
+define('SECURE_AUTH_SALT', '$(bash random.sh 24)' );            \n\
+define('LOGGED_IN_SALT',   '$(bash random.sh 24)' );            \n\
+define('NONCE_SALT',       '$(bash random.sh 24)' );            \n\
+define('WP_DEBUG',                   false   );                 \n\
+define('WP_DEBUG_LOG',               false   );                 \n\
+define('WP_DEBUG_DISPLAY',           false   );                 \n\
+define('DISABLE_WP_CRON',            false   );                 \n\
+define('AUTOMATIC_UPDATER_DISABLED', false   );                 \n\
+define('WP_HOME',         getenv('WP_HOME')    );               \n\
+define('WP_SITEURL',      getenv('WP_SITEURL') );               \n\
+define('FORCE_SSL',       getenv('WP_SSL')       === 'true' );  \n\
+define('FORCE_SSL_ADMIN', getenv('WP_SSL_ADMIN') === 'true' );  \n\
+define('FORCE_SSL_LOGIN', getenv('WP_SSL_LOGIN') === 'true' );  \n\
+define('WP_AUTO_UPDATE_CORE', 'minor' );                        \n\
+if ( ! defined( 'ABSPATH' ) ) {                                 \n\
+	define( 'ABSPATH', dirname( __FILE__ ) . '/' );             \n\
+}                                                               \n\
+require_once( ABSPATH . 'wp-settings.php' );                    \n\
+//error_log(print_r(get_defined_vars(), true));                 \n\
+?>                                                              \n\
+\n" | tee ./wp-config.php
 
 RUN touch ./wp-content/debug.log
 RUN echo "<?php header('Content-Type: text/plain'); var_export(\$_SERVER); ?>" | tee ./test.php
@@ -159,7 +161,6 @@ RUN ( \
 		echo "ssl_certificate_key ${CERT_FILE}.key;" ; \
 	) | tee -a /etc/nginx/sites-enabled/wordpress
 
-#VOLUME /var/lib/mysql
 ENV SVC_MYSQL "mysql"
 ENV SVC_NGINX "nginx"
 ENV SVC_WEB   "${SVC_NGINX}"
@@ -175,7 +176,7 @@ ENV WP_SITEURL ""
 ENV WP_SSL       "false"
 ENV WP_SSL_ADMIN "false"
 ENV WP_SSL_LOGIN "false"
-#RUN chown -R mysql:mysql /var/lib/mysql /var/run/mysqld
+RUN chown -R mysql:mysql /var/lib/mysql /var/run/mysqld
 CMD date; hostname; trap '\
 		for i in "${SVC_MYSQL}" "${SVC_PHP}" "${SVC_WEB}"; do \
 			service "${i}" stop; \
@@ -193,7 +194,7 @@ CMD date; hostname; trap '\
 		service "${i}" start; \
 	done; \
 	mysql -BEno -h"${DB_HOST}" -P"${DB_PORT}" -u"root" -p"${DB_PASS}" -e "\
-		SELECT PASSWORD('${DB_PASS}') as '${DB_PASS}';                    \
+		SELECT PASSWORD('${DB_PASS}') AS '${DB_PASS}';                    \
 		CREATE SCHEMA ${DB_NAME};                                         \
 		UPDATE user SET                                                   \
 			Host='%',                                                     \
@@ -209,10 +210,10 @@ CMD date; hostname; trap '\
 	|| sleep 0 \
 	&& tail -F \
 		/var/log/php${PHP_VER}-fpm.log \
-		/var/log/nginx/access.log \
-		/var/log/nginx/error.log \
-		/var/log/mysql/error.log \
-		./wp-content/debug.log \
+		/var/log/nginx/access.log      \
+		/var/log/nginx/error.log       \
+		/var/log/mysql/error.log       \
+		./wp-content/debug.log         \
 		/tmp/log #| ccze -A
 
 HEALTHCHECK \
@@ -222,14 +223,16 @@ HEALTHCHECK \
 	CMD nginx -s reload; \
 	curl -skILfm1 http://0:80
 
-EXPOSE \
-	80 \
+EXPOSE  \
+	80  \
 	443 \
 	3306
 
 VOLUME \
+	/var/log \
+	/var/run \
 	/var/lib/mysql \
-	/data/wp-content
+	/home/wp-content
 
 #  Example;
 #    docker run --hostname=my.blog --rm -itd -p80:80 -p443:443 pvtmert/wordpress

@@ -1,7 +1,7 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/shadowsocks -f
 
 ARG BASE=debian:stable
-FROM ${BASE} as build
+FROM ${BASE} AS build
 
 RUN apt update
 RUN apt install -y \

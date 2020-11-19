@@ -6,9 +6,9 @@ RUN apt update
 RUN apt install -y \
 	wireshark
 
-#VOLUME /tmp/.X11-unix
-WORKDIR /data
+WORKDIR /home
 ENV DISPLAY :0
 
+VOLUME /tmp/.X11-unix
 ENTRYPOINT [ "wireshark" ]
 CMD        [ ]

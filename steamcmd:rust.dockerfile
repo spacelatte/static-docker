@@ -12,7 +12,7 @@ RUN steamcmd \
 	+quit
 
 ENV PORT 28015
-
 EXPOSE ${PORT}/tcp ${PORT}/udp
 
+ENV APPID=$APPID
 CMD /bin/bash

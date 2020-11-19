@@ -2,17 +2,18 @@
 
 ARG PREFIX="/opt"
 ARG VERSION=1.9.6
+ARG ARCHIVEURL=https://nlnetlabs.nl/downloads/unbound/unbound-${VERSION}.tar.gz
 ARG BASE=debian:stable
-FROM ${BASE} as build
+FROM ${BASE} AS build
 
 RUN apt update
 RUN apt install -y \
 	curl build-essential \
 	libssl-dev libexpat-dev
 
-ARG VERSION
+ARG ARCHIVEURL
 WORKDIR /data
-RUN curl -#L "https://nlnetlabs.nl/downloads/unbound/unbound-${VERSION}.tar.gz" \
+RUN curl --compressed -#L "${ARCHIVEURL}" \
 	| tar --strip=1 -xzC "."
 
 #RUN apt install -y

@@ -5,10 +5,10 @@ ARG PREFIX=/nginx
 ARG BASE=debian:latest
 # you may use 'centos:7' or 'debian:stable' atm
 
-FROM ${BASE} as build
+FROM ${BASE} AS build
 ARG BASE
 
-#FROM centos:7 as build
+#FROM centos:7 AS build
 RUN echo "${BASE}" | grep -qi "centos" \
 	&& yum install -y \
 		git \
@@ -28,7 +28,7 @@ RUN echo "${BASE}" | grep -qi "centos" \
 		libatomic_ops-devel \
 	|| true
 
-#FROM debian:stable as build
+#FROM debian:stable AS build
 RUN echo "${BASE}" | grep -qi "debian" \
 	&& apt update \
 	&& apt install -y \

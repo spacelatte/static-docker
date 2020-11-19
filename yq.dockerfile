@@ -1,7 +1,7 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/yq -f
 
 ARG BASE=debian:testing
-FROM ${BASE} as build
+FROM ${BASE} AS build
 
 RUN apt update
 RUN apt install -y \

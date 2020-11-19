@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build -t pvtmert/openbsd -f
 
-FROM debian:testing as build
+FROM debian:testing AS build
 
 RUN apt update
 RUN apt install -y \

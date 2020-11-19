@@ -4,7 +4,9 @@ FROM pvtmert/websocketd
 
 RUN apk add inotify-tools
 
-#VOLUME /data
-WORKDIR /data
+WORKDIR /home
+VOLUME  /home
 
 CMD [ "--port=80", "--staticdir=.", "--", "inotifywait", "-re", "modify", "." ]
+
+EXPOSE 80/tcp

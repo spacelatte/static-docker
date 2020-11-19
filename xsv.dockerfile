@@ -1,7 +1,7 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/xsv -f
 
 ARG BASE=alpine
-FROM ${BASE} as build
+FROM ${BASE} AS build
 
 RUN apk add --no-cache \
 	cargo rust make git

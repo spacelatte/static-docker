@@ -12,14 +12,12 @@ RUN steamcmd \
 	+quit
 
 ENV PORT 27015
-
 EXPOSE ${PORT}/tcp ${PORT}/udp
 
-ENTRYPOINT /home/srcds_run
-
-CMD /home/srcds_run \
+ENV APPID=$APPID
+CMD srcds_run \
 	-console \
 	+game insurgency \
-	+hostname ${HOSTNAME} \
-	+port ${PORT} \
+	+hostname "${HOSTNAME}" \
+	+port "${PORT}" \
 	+map station \

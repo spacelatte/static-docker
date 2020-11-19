@@ -8,8 +8,7 @@ RUN apt install -y \
 	libpulse0 qemu-kvm libgl1 libxcomposite1 \
 	libxcursor1 libasound2 qt5dxcb-plugin
 
-#VOLUME /data
-WORKDIR /data
+WORKDIR /home
 
 ENV ANDROID_HOME /usr/lib/android-sdk
 ENV NODE_VERSION v12.16.0
