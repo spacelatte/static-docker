@@ -1,0 +1,58 @@
+#!/usr/bin/env cat
+
+name: Build Docker Images
+
+on:
+  push:
+    branches:
+    - master
+    - main
+  pull_request:
+    branches:
+    - master
+    - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_USER: pvtmert
+      DOCKER_BUILDKIT: "1"
+      DOCKER_CLI_EXPERIMENTAL: enabled
+      DOCKER_PLATFORMS: |
+        linux/amd64
+        linux/386
+        linux/arm64
+        linux/arm/v7
+        linux/arm/v6
+        linux/ppc64le
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Login to DockerHub
+      env:
+        DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+      run: |
+        docker login -u "${DOCKER_USER}" -p "${DOCKER_TOKEN}"
+    - name: Prepare Builder (buildx)
+      run: |
+        PLATFORMS=$(tr -s '[:space:]' ',' <<< "${DOCKER_PLATFORMS}" )
+        docker run --rm --privileged multiarch/qemu-user-static:latest --reset -p yes
+        docker buildx create --use --name=multiarch --platform="${PLATFORMS%,}"
+        docker buildx inspect --bootstrap
+        docker buildx install
+        docker buildx use --default multiarch
+    - name: Build containers
+      run: |
+        PLATFORMS=$(tr -s '[:space:]' ',' <<< "${DOCKER_PLATFORMS}" )
+        for FILE in *.Dockerfile; do
+          docker buildx build \
+          --cache-from="${DOCKER_USER}/cache:${FILE//.Dockerfile}" \
+          --cache-to="${DOCKER_USER}/cache:${FILE//.Dockerfile}" \
+          --platform="${PLATFORMS%,}" \
+          --pull \
+          --push \
+          -f="${FILE}" \
+          -t="${DOCKER_USER}/${FILE//.Dockerfile}" \
+          "$(mktemp -d)"
+        done
