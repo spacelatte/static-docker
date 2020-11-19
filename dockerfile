@@ -1,10 +1,10 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/scratch -f
 
-FROM debian as deb
+FROM debian AS deb
 
 ############################################################
 
-FROM busybox as box
+FROM busybox AS box
 
 ENV ARCH x86_64
 ENV REPO http://landley.net/toybox/bin/toybox

@@ -2,7 +2,7 @@
 
 ARG PORT=80
 ARG BASE=debian:stable
-FROM ${BASE} as build
+FROM ${BASE} AS build
 
 RUN apt update && \
 	apt install -y \

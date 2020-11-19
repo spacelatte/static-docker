@@ -1,6 +1,6 @@
-#!/usr/bin/env -S docker -H ssh://screw.direct build --compress -t pvtmert/jumpserver -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/jumpserver -f
 
-FROM debian:10
+FROM debian:stable
 
 RUN apt update
 RUN apt install -y \

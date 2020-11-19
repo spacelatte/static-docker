@@ -11,8 +11,7 @@ RUN apt install -y \
 	postgresql default-mysql-server
 
 WORKDIR /data
-#COPY owncloud-10.0.10.tar.bz2 owncloud.tar.bz2
-ADD https://download.owncloud.org/community/owncloud-10.0.10.tar.bz2 owncloud.tar.bz2
+ADD https://download.owncloud.org/community/owncloud-10.4.1.tar.bz2 owncloud.tar.bz2
 
 RUN tar xf owncloud.tar.bz2 \
 	&& ln -s /data/owncloud /srv/www
@@ -42,7 +41,7 @@ RUN ( \
 ) | tee /etc/apache2/sites-enabled/main.conf
 
 CMD true \
-	&& echo service php7.0-fpm start \
+	&& service php7.0-fpm start \
 	&& service apache2 start \
 	&& service mysql   start \
 	&& mysql -uroot -e "SET PASSWORD FOR 'root'@'%' = PASSWORD('pass')" \

@@ -1,8 +1,10 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/puppeteer -f
 
+ARG NODE_VER=10.15.3
+ARG VERSION=3.1.0
 FROM centos:7
 
-RUN yum update -y && yum install -y \
+RUN yum install -y \
 	pango                    \
 	libXcomposite            \
 	libXcursor               \
@@ -24,13 +26,14 @@ RUN yum update -y && yum install -y \
 	xorg-x11-fonts-cyrillic  \
 	xorg-x11-fonts-Type1     \
 	xorg-x11-fonts-misc      \
-	git curl xz
+	git curl
 
-ENV NODE_VER 10.15.3
 
-RUN curl -#L "https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-x64.tar.xz" \
-	| xz -vvdc | tar --strip-components=1 -xC /usr/local
+ARG NODE_VER
+RUN curl --compressed -#L "https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-x64.tar.gz" \
+	| tar --strip=1 -xzC /usr/local
 
-RUN npm install -g --unsafe-perm=true puppeteer
+ARG VERSION
+RUN npm install -g --allow-root --unsafe-perm=true puppeteer@${VERSION}
 
 WORKDIR /data

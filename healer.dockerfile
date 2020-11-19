@@ -24,8 +24,7 @@ LAST="$(stat -c %Y "$1")"\n\
 test "${INTERVAL%.*}" -ge "$(( (TIME - LAST) / 3 ))"\n\
 exit $?\n' | tee "${HEALTH}"
 
-RUN echo $'#!/usr/bin/env jq\n\
-#!/usr/bin/env jq -f\n\
+RUN echo $'#!/usr/bin/env jq -f\n\
 .[] | select(true\n\
 	and ( ($_state | length == 0) or (.Status | contains($_state)) )\n\
 	and ( ($_label | length == 0) or (.Labels | has($_label))      )\n\

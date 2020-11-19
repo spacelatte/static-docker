@@ -2,7 +2,7 @@
 
 # well, fix kernel too old error :)
 ARG BASE=debian:9
-FROM ${BASE} as build
+FROM ${BASE} AS build
 
 RUN apt update
 RUN apt install -y \

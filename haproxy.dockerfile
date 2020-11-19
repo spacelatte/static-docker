@@ -1,7 +1,7 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/haproxy -f
 
 ARG BASE=centos:7
-FROM ${BASE} as build
+FROM ${BASE} AS build
 
 RUN yum install -y \
 	git gcc make

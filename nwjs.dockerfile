@@ -3,7 +3,7 @@
 ARG VERSION=0.44.1
 ARG WITHSDK=-sdk
 ARG BASE=debian
-FROM ${BASE} as build
+FROM ${BASE} AS build
 
 RUN apt update
 RUN apt install -y \
@@ -31,7 +31,7 @@ RUN apt install -y \
 WORKDIR /data
 ARG VERSION
 ARG WITHSDK
-RUN curl -#L "https://dl.nwjs.io/v${VERSION}/nwjs${WITHSDK}-v${VERSION}-linux-x64.tar.gz" \
+RUN curl --compressed -#L "https://dl.nwjs.io/v${VERSION}/nwjs${WITHSDK}-v${VERSION}-linux-x64.tar.gz" \
 	| tar --strip=1 -xzC .
 
 ARG DEBIAN_FRONTEND=noninteractive

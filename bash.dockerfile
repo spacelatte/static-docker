@@ -1,7 +1,7 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/bash -f
 
 ARG BASE=debian:testing
-FROM ${BASE} as build
+FROM ${BASE} AS build
 
 RUN apt update
 RUN apt install -y \
@@ -9,7 +9,7 @@ RUN apt install -y \
 
 ARG VERSION=5.0
 WORKDIR /data
-RUN curl -#L https://ftp.gnu.org/gnu/bash/bash-${VERSION}.tar.gz \
+RUN curl -#L "https://ftp.gnu.org/gnu/bash/bash-${VERSION}.tar.gz" \
 	| tar --strip=1 -xz
 
 ARG PREFIX=/opt
@@ -62,7 +62,7 @@ RUN true \
 
 RUN make -C "${BUILD}" -j$(nproc) all install
 
-FROM ${BASE} as runtime
+FROM ${BASE} AS runtime
 COPY --from=build /opt /opt
 ENTRYPOINT [ "/opt/bin/bash" ]
 CMD        [ "-l" ]
