@@ -44,7 +44,6 @@ jobs:
         docker buildx use --default multiarch
     - name: Build containers
       run: |
-        buildx prune --verbose -af
         PLATFORMS=$(tr -s '[:space:]' ',' <<< "${DOCKER_PLATFORMS}" )
         for FILE in *.dockerfile; do
           REPO=${FILE//.dockerfile}
@@ -57,5 +56,5 @@ jobs:
           -f="${FILE}" \
           -t="${DOCKER_USER}/${REPO}" \
           "$(mktemp -d)" || echo "skipping ${FILE}"
-          buildx prune --verbose -af
+          docker buildx prune --verbose -af
         done
