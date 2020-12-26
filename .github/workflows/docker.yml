@@ -44,15 +44,18 @@ jobs:
         docker buildx use --default multiarch
     - name: Build containers
       run: |
+        buildx prune --verbose -af
         PLATFORMS=$(tr -s '[:space:]' ',' <<< "${DOCKER_PLATFORMS}" )
         for FILE in *.dockerfile; do
+          REPO=${FILE//.dockerfile}
           docker buildx build \
-          --cache-from="${DOCKER_USER}/cache:${FILE//.Dockerfile}" \
-          --cache-to="${DOCKER_USER}/cache:${FILE//.Dockerfile}" \
+          --cache-from="${DOCKER_USER}/${REPO}:cache" \
+          --cache-to="${DOCKER_USER}/${REPO}:cache" \
           --platform="${PLATFORMS%,}" \
           --pull \
           --push \
           -f="${FILE}" \
-          -t="${DOCKER_USER}/${FILE//.Dockerfile}" \
+          -t="${DOCKER_USER}/${REPO}" \
           "$(mktemp -d)" || echo "skipping ${FILE}"
+          buildx prune --verbose -af
         done
