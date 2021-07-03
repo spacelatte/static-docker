@@ -4,14 +4,17 @@ FROM debian:stable
 
 RUN apt update
 RUN apt install -y \
-	libxtst6       \
-	libxdamage1    \
-	libgtk-3-0     \
-	libasound2     \
-	libnss3        \
-	libxss1        \
-	libx11-xcb1    \
-	sudo curl bzip2
+	bzip2       \
+	curl        \
+	libasound2  \
+	libgtk-3-0  \
+	libnss3     \
+	libx11-xcb1 \
+	libxdamage1 \
+	libxss1     \
+	libxtst6    \
+	sudo        \
+	--no-install-recommends
 
 WORKDIR /home
 RUN curl -#OL https://s3.amazonaws.com/a280ccaaf904330a389db759e6275285/acunetix_trial.sh

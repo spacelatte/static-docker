@@ -45,17 +45,22 @@ RUN ( \
 ENV LANG "en_US.UTF-8"
 ENV LC_ALL "${LANG}"
 RUN airflow initdb && airflow resetdb -y \
-	&& sed -i'' 's/executor = .*/executor = LocalExecutor/'     \
+	&& sed -i'' \
+		's/executor = .*/executor = LocalExecutor/'     \
 		"${AIRFLOW_HOME}/airflow.cfg" \
-	&& sed -i'' 's/load_examples = True/load_examples = False/' \
+	&& sed -i'' \
+		's/load_examples = True/load_examples = False/' \
 		"${AIRFLOW_HOME}/airflow.cfg" \
-	&& sed -i'' 's/expose_config = False/expose_config = True/' \
+	&& sed -i'' \
+		's/expose_config = False/expose_config = True/' \
 		"${AIRFLOW_HOME}/airflow.cfg" \
-	&& sed -i'' "s#sql_alchemy_conn = .*#sql_alchemy_conn = ${AIRFLOW_DBURL}#" \
+	&& sed -i'' \
+		"s#sql_alchemy_conn = .*#sql_alchemy_conn = ${AIRFLOW_DBURL}#" \
 		"${AIRFLOW_HOME}/airflow.cfg" \
-	&& sed -i'' 's/dag_run_conf_overrides_params = False/dag_run_conf_overrides_params = True/' \
+	&& sed -i'' \
+		's/dag_run_conf_overrides_params = False/dag_run_conf_overrides_params = True/' \
 		"${AIRFLOW_HOME}/airflow.cfg" \
-	&& true
+	&& cat "${AIRFLOW_HOME}/airflow.cfg"
 
 RUN chmod +x /etc/rc.local /etc/rc.d/rc.local; \
 	passwd -df root; \
