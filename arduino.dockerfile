@@ -4,8 +4,13 @@ FROM debian:stable
 
 RUN apt update
 RUN apt install -y \
-	xvfb arduino curl python \
-	python-pip python-serial
+	arduino \
+	curl \
+	python \
+	python-pip \
+	python-serial \
+	xvfb \
+	--no-install-recommends
 
 WORKDIR /data
 

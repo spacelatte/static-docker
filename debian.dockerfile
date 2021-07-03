@@ -1,13 +1,14 @@
 #!/usr/bin/env -S docker build --progress=tty --compress -t pvtmert/debian:test -f
 
-FROM debian:stable
+FROM debian:testing
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt update
 #RUN apt install -y
-WORKDIR /tmp
+WORKDIR /home
 RUN echo '\n\
+jq                     \n\
 man                    \n\
 git                    \n\
 vim                    \n\
@@ -32,7 +33,6 @@ cmake                  \n\
 clang                  \n\
 golang                 \n\
 nodejs                 \n\
-bcrypt                 \n\
 ccrypt                 \n\
 airspy                 \n\
 procps                 \n\
@@ -54,7 +54,6 @@ binutils               \n\
 dnsutils               \n\
 elfutils               \n\
 hfsutils               \n\
-hfsprogs               \n\
 net-tools              \n\
 diffutils              \n\
 dateutils              \n\
@@ -65,7 +64,6 @@ moreutils              \n\
 findutils              \n\
 traceroute             \n\
 cloud-init             \n\
-vnc4server             \n\
 pkg-config             \n\
 cifs-utils             \n\
 subversion             \n\
@@ -82,24 +80,25 @@ avahi-autoipd          \n\
 squashfs-tools         \n\
 avahi-discover         \n\
 suckless-tools         \n\
+tightvncserver         \n\
 bash-completion        \n\
 build-essential        \n\
 default-jdk-headless   \n\
 default-mysql-client   \n\
-' | tee packages
+' | tee /.packages
 
 RUN true \
 	&& apt update \
-	&& apt install -y $(cat packages) \
+	&& apt install -y $(cat /.packages) \
 	&& apt clean \
 	&& apt autoclean \
 	&& apt autoremove \
-	&& du -hs /usr /var
+	&& du -hs /usr /var \
+	| tee -a /.du
 
 RUN apt install -y locales localepurge
 RUN echo "en_US.UTF-8 UTF-8" \
 	| tee -a /etc/locale.gen \
 	&& locale-gen
 
-ENV USER root
-CMD login -f ${USER} || su - ${USER}
+CMD login -f ${USER:-root} || su - ${USER:-root}

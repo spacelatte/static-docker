@@ -5,14 +5,21 @@ FROM ${BASE} AS build
 
 RUN apt update
 RUN apt install -y \
-	automake bison build-essential clang \
-	libevent-dev git pkg-config libncurses5-dev
+	automake \
+	bison \
+	build-essential \
+	clang \
+	git \
+	libevent-dev \
+	libncurses5-dev \
+	pkg-config \
+	--no-install-recommends
 
 ENV CC   clang
-ENV DIR  repo
+ENV DIR  ../source
 ENV REPO https://github.com/curl/curl.git
 
-WORKDIR /home
+WORKDIR /home/build
 
 RUN apt install -y cmake libssl-dev libtool§ shtool \
 	libssh-dev zlib1g-dev libnghttp2-dev librtmp-dev libzstd-dev

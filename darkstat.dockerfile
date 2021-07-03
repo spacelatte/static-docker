@@ -5,7 +5,16 @@ FROM ${BASE} AS build
 
 RUN apt update
 RUN apt install -y \
-	build-essential git clang make automake autoconf libpcap-dev zlib1g-dev xxd
+	build-essential \
+	git \
+	clang \
+	make \
+	automake \
+	autoconf \
+	libpcap-dev \
+	zlib1g-dev \
+	xxd \
+	--no-install-recommends
 
 ENV CC   clang
 ENV DIR  repo

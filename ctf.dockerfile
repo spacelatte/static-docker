@@ -5,6 +5,7 @@ FROM debian:stable
 RUN apt update
 RUN apt dist-upgrade -y
 RUN apt install -y \
+	binwalk \
 	bsdmainutils \
 	build-essential \
 	clang \

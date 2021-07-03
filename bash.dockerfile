@@ -5,7 +5,12 @@ FROM ${BASE} AS build
 
 RUN apt update
 RUN apt install -y \
-	build-essential curl gcc make libreadline-dev
+	build-essential \
+	curl \
+	gcc \
+	libreadline-dev \
+	make \
+	--no-install-recommends
 
 ARG VERSION=5.0
 WORKDIR /data
@@ -31,8 +36,8 @@ RUN true \
 		--enable-coprocesses                \
 		--enable-debugger                   \
 		--enable-dev-fd-stat-broken         \
-		--enable-direxpand-default          \
 		--enable-directory-stack            \
+		--enable-direxpand-default          \
 		--enable-disabled-builtins          \
 		--enable-dparen-arithmetic          \
 		--enable-extended-glob              \
@@ -42,9 +47,11 @@ RUN true \
 		--enable-help-builtin               \
 		--enable-history                    \
 		--enable-job-control                \
+		--enable-mem-scramble               \
 		--enable-multibyte                  \
 		--enable-net-redirections           \
 		--enable-process-substitution       \
+		--enable-profiling                  \
 		--enable-progcomp                   \
 		--enable-prompt-string-decoding     \
 		--enable-readline                   \
@@ -52,12 +59,10 @@ RUN true \
 		--enable-select                     \
 		--enable-separate-helpfiles         \
 		--enable-single-help-strings        \
+		--enable-static-link                \
 		--enable-strict-posix-default       \
 		--enable-usg-echo-default           \
 		--enable-xpg-echo-default           \
-		--enable-mem-scramble               \
-		--enable-profiling                  \
-		--enable-static-link                \
 		--prefix="${PREFIX}"
 
 RUN make -C "${BUILD}" -j$(nproc) all install

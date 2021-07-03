@@ -5,11 +5,12 @@ FROM debian:latest
 RUN apt update
 RUN apt install -y \
 	build-essential \
+	git \
 	python3-dev \
 	python3-pip \
-	git
+	--no-install-recommends
 
-RUN pip3 install -U pip git+https://github.com/lyft/cartography.git
+RUN python3 -m pip install -U pip git+https://github.com/lyft/cartography.git
 
 WORKDIR /home
 CMD bash
