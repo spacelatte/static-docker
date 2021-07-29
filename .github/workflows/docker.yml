@@ -15,46 +15,145 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      DOCKER_USER: pvtmert
-      DOCKER_BUILDKIT: "1"
-      DOCKER_CLI_EXPERIMENTAL: enabled
-      DOCKER_PLATFORMS: |
-        linux/amd64
-        linux/386
-        linux/arm64
-        linux/arm/v7
-        linux/arm/v6
-        linux/ppc64le
+    strategy:
+      fail-fast: false
+      max-parallel: 99
+      matrix:
+        image:
+        - acunetix
+        - airflow
+        - arduino:esp32
+        - arduino
+        - asterisk
+        - bash
+        - beastiebox
+        - cartography
+        - ceph
+        - chromium
+        - clustercontrol
+        - ctf
+        - curl
+        - darkstat
+        - darling
+        - debian
+        - debug
+        - devsocket
+        - dind
+        - elemental
+        - esp-idf
+        - figlet
+        - flask:alpine
+        - flask:slim
+        - flask
+        - forticlient
+        - freebsd
+        - gitbook
+        - github-runner
+        - go
+        - goaccess
+        - graphviz
+        - h2o
+        - haproxy
+        - healer
+        - heirloom
+        - heroku
+        - icestorm
+        - imx
+        - ipython
+        - jumpserver
+        - jupyter
+        - kali
+        - mesa
+        - minimodem
+        - ncdu
+        - nessus
+        - netcat
+        - nginx
+        - nmap
+        - notebook
+        - nwjs
+        - openbsd
+        - openfire
+        - openfortivpn
+        - owncloud
+        - percona-pmm2-client
+        - proxysql
+        - puppeteer
+        - pvs
+        - python
+        - racoon
+        - react-native
+        - react
+        - redis-stat
+        - rig
+        - rsync
+        - sendmail
+        - shadowsocks:client
+        - shadowsocks:server
+        - shadowsocks
+        - snidump
+        - soong
+        - splunk
+        - ssh-gateway
+        - ssl
+        - steamcmd
+        - steamcmd:csgo
+        - steamcmd:doi
+        - steamcmd:hl2dm
+        - steamcmd:insurgency
+        - steamcmd:rust
+        - sublime
+        - tableau
+        - tailscale
+        - tinyproxy
+        - tmux
+        - toolbox
+        - unbound
+        - unhealthy
+        - vscode
+        - webdev
+        - websocketd
+        - wireshark
+        - wordpress
+        - xsv
+        - yq
+        - zeronet
+
     steps:
+
+    - name: Setup QEMU
+      continue-on-error: true
+      uses: docker/setup-qemu-action@v1
+      with:
+        image: tonistiigi/binfmt:latest
+        #image: multiarch/qemu-user-static:latest
+        platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
+
+    - name: Setup Buildx
+      uses: docker/setup-buildx-action@v1
+      with:
+        install: true
+
+    - name: Login Docker
+      uses: docker/login-action@v1
+      with:
+        username: pvtmert
+        password: ${{ secrets.DOCKER_TOKEN }}
+
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Login to DockerHub
-      env:
-        DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
-      run: |
-        docker login -u "${DOCKER_USER}" -p "${DOCKER_TOKEN}"
-    - name: Prepare Builder (buildx)
-      run: |
-        PLATFORMS=$(tr -s '[:space:]' ',' <<< "${DOCKER_PLATFORMS}" )
-        docker run --rm --privileged multiarch/qemu-user-static:latest --reset -p yes
-        docker buildx create --use --name=multiarch --platform="${PLATFORMS%,}"
-        docker buildx inspect --bootstrap
-        docker buildx install
-        docker buildx use --default multiarch
-    - name: Build containers
-      run: |
-        PLATFORMS=$(tr -s '[:space:]' ',' <<< "${DOCKER_PLATFORMS}" )
-        for FILE in *.dockerfile; do
-          REPO=${FILE//.dockerfile}
-          docker buildx build \
-          --cache-from="${DOCKER_USER}/${REPO}:cache" \
-          --cache-to="${DOCKER_USER}/${REPO}:cache" \
-          --platform="${PLATFORMS%,}" \
-          --pull \
-          --push \
-          -f="${FILE}" \
-          -t="${DOCKER_USER}/${REPO}" \
-          "$(mktemp -d)" || echo "skipping ${FILE}"
-          docker buildx prune --verbose -af
-        done
+
+    - name: Spacer
+      run:  sudo rm -rf /usr/local/lib/android /usr/share/dotnet; df -h
+
+    - name: BuildPush
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        pull: true
+        push: true
+        file: ${{ matrix.image }}.dockerfile
+        tags: pvtmert/${{ matrix.image }}
+        platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
+        cache-to: type=registry,ref=pvtmert/${{ matrix.image }}-cache,mode=max
+        cache-from: type=registry,ref=pvtmert/${{ matrix.image }}-cache
