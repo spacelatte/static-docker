@@ -43,24 +43,24 @@ RUN apt install -y \
 	vim \
 	man \
 	gdb \
-	bsdutils      \
-	binutils      \
-	dnsutils      \
-	elfutils      \
-	hfsutils      \
-	diffutils     \
-	dateutils     \
-	coreutils     \
-	cronutils     \
-	mailutils     \
-	moreutils     \
-	findutils     \
-	cifs-utils    \
-	debianutils   \
-	exfat-utils   \
-	avahi-utils   \
-	bsdmainutils  \
-	airport-utils \
+	bsdutils       \
+	binutils       \
+	dnsutils       \
+	elfutils       \
+	hfsutils       \
+	diffutils      \
+	dateutils      \
+	coreutils      \
+	cronutils      \
+	mailutils      \
+	moreutils      \
+	findutils      \
+	cifs-utils     \
+	debianutils    \
+	exfat-utils    \
+	avahi-utils    \
+	bsdmainutils   \
+	airport-utils  \
 	squashfs-tools \
 	default-jdk-headless \
 	default-mysql-client \
@@ -116,7 +116,6 @@ ms-toolsai.jupyter\n\
 ms-vscode-remote.remote-containers\n\
 ms-vscode-remote.remote-ssh\n\
 ms-vscode-remote.remote-ssh-edit\n\
-ms-vscode.cpptools\n\
 ms-vscode.hexeditor\n\
 ms-vsliveshare.vsliveshare\n\
 ms-vsliveshare.vsliveshare-audio\n\
