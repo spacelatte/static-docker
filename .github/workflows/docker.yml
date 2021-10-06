@@ -20,7 +20,6 @@ jobs:
       max-parallel: 99
       matrix:
         image:
-        - acunetix
         - airflow
         - arduino:esp32
         - arduino

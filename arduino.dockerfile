@@ -7,8 +7,8 @@ RUN apt install -y \
 	arduino \
 	curl \
 	python \
-	python-pip \
-	python-serial \
+	python3-pip \
+	python3-serial \
 	xvfb \
 	--no-install-recommends
 

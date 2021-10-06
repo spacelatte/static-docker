@@ -11,7 +11,6 @@ RUN apt install -y \
 	traceroute \
 	docker.io \
 	net-tools \
-	hfsprogs \
 	autoconf \
 	automake \
 	testdisk \
