@@ -153,6 +153,6 @@ jobs:
         push: true
         file: ${{ matrix.image }}.dockerfile
         tags: pvtmert/${{ matrix.image }}
-        platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
+        platforms: linux/amd64 #,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
         cache-to: type=registry,ref=pvtmert/${{ matrix.image }}-cache,mode=max
         cache-from: type=registry,ref=pvtmert/${{ matrix.image }}-cache
